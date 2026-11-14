@@ -1,0 +1,695 @@
+/* =====================================================================
+   Telão — folha de estilo única
+   Índice:
+     1. Variáveis (cores, tamanhos)
+     2. Base e acessibilidade
+     3. Componentes (botões, campos, avatar, ícones)
+     4. Login
+     5. Layout do app
+     6. Barra de servidores (trilho)
+     7. Painel do servidor (lateral)
+     8. Palco (telas e pessoas)
+     9. Chat
+    10. Controles da call
+    11. Janelas e avisos
+    12. Responsivo (notebook, tablet e celular)
+   ===================================================================== */
+
+
+/* ============================== 1. Variáveis ============================== */
+:root {
+  /* fundos, do mais escuro ao mais claro */
+  --fundo-0: #090807;
+  --fundo-1: #0e0c0a;
+  --fundo-2: #151210;
+  --fundo-3: #1e1a16;
+  --fundo-4: #29231d;
+  --borda: #2c251f;
+
+  /* texto */
+  --texto: #f3eee9;
+  --texto-suave: #a39a90;
+
+  /* marca e estados */
+  --laranja: #ff7a1a;
+  --laranja-claro: #ff9a45;
+  --texto-no-laranja: #1f0e00;
+  --vermelho: #ef4444;
+  --verde: #22c55e;
+
+  /* medidas */
+  --raio: 14px;
+  --raio-pequeno: 10px;
+  --altura-topo: 56px;
+  --largura-trilho: 72px;
+  --largura-lateral: 240px;
+  --largura-chat: 320px;
+
+  --fonte: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", sans-serif;
+  --transicao: .15s ease;
+}
+
+
+/* ============================== 2. Base ============================== */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--fundo-1);
+  color: var(--texto);
+  font-family: var(--fonte);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, p { margin: 0; }
+ul, ol { list-style: none; margin: 0; padding: 0; }
+img, svg, video { display: block; }
+[hidden] { display: none !important; }
+
+/* texto só para leitores de tela */
+.so-leitor {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+:focus-visible { outline: 2px solid var(--laranja); outline-offset: 2px; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: var(--fundo-4); border-radius: 8px; }
+
+
+/* ============================== 3. Componentes ============================== */
+
+/* --- botões --- */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  padding: .65rem 1.1rem;
+  border: none;
+  border-radius: var(--raio-pequeno);
+  background: var(--fundo-3);
+  color: var(--texto);
+  font: inherit;
+  cursor: pointer;
+  transition: background var(--transicao), transform .1s;
+}
+.botao:hover { background: var(--fundo-4); }
+.botao:active { transform: scale(.97); }
+.botao:disabled { opacity: .45; cursor: default; }
+
+.botao--primario { background: var(--laranja); color: var(--texto-no-laranja); font-weight: 700; }
+.botao--primario:hover { background: var(--laranja-claro); }
+.botao--sucesso,
+.botao--sucesso:hover { background: var(--verde); color: #052e14; }
+.botao--perigo,
+.botao--perigo:hover { background: var(--vermelho); color: #fff; }
+.botao--largo { width: 100%; }
+.botao--pequeno { padding: .3rem .65rem; font-size: .8rem; }
+
+.botao--google { width: 100%; padding: .85rem; background: #fff; color: #1f1f1f; font-weight: 600; }
+.botao--google:hover { background: #f1f1f1; }
+
+.botao-icone {
+  width: 34px; height: 34px;
+  padding: 7px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--texto-suave);
+  cursor: pointer;
+}
+.botao-icone:hover { background: var(--fundo-3); color: var(--texto); }
+
+.botao-texto {
+  padding: .35rem .5rem;
+  border: none;
+  background: none;
+  color: var(--texto-suave);
+  font: inherit;
+  font-size: .85rem;
+  text-align: left;
+  cursor: pointer;
+}
+.botao-texto:hover { color: var(--texto); }
+.botao-texto--perigo,
+.botao-texto--perigo:hover { color: var(--vermelho); }
+
+/* --- campos --- */
+.campo {
+  width: 100%;
+  padding: .7rem .9rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--fundo-1);
+  color: var(--texto);
+  font: inherit;
+}
+.campo:focus { outline: 2px solid var(--laranja); outline-offset: -1px; }
+
+/* --- ícones (SVG de traço) --- */
+.icone {
+  width: 100%; height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --- avatar (foto ou iniciais) --- */
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 700;
+  transition: box-shadow .1s;
+}
+.avatar--grande { width: 68px; height: 68px; font-size: 1.6rem; }
+.avatar.falando { box-shadow: 0 0 0 2px var(--fundo-2), 0 0 0 4px var(--verde); }
+
+.badge {
+  margin-left: .3rem;
+  padding: 0 .35rem;
+  border-radius: 99px;
+  background: var(--vermelho);
+  color: #fff;
+  font-size: .65rem;
+  font-weight: 800;
+}
+
+
+/* ============================== 4. Login ============================== */
+.login {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding: 1.5rem;
+  background: radial-gradient(60% 50% at 50% 0%, #ff7a1a22, transparent);
+}
+
+.login__cartao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  width: min(380px, 100%);
+  text-align: center;
+}
+
+.login__logo { filter: drop-shadow(0 10px 30px #ff7a1a55); }
+
+.marca { font-size: 2.4rem; font-weight: 800; letter-spacing: -.02em; }
+.marca__destaque { color: var(--laranja); }
+
+.login__texto { color: var(--texto-suave); line-height: 1.5; max-width: 300px; }
+.login__erro { min-height: 1.2em; color: var(--vermelho); font-size: .88rem; line-height: 1.4; }
+.login__aviso { color: var(--texto-suave); font-size: .88rem; line-height: 1.5; }
+
+
+/* ============================== 5. Layout do app ============================== */
+.app {
+  display: grid;
+  grid-template-columns: var(--largura-trilho) var(--largura-lateral) 1fr var(--largura-chat);
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "trilho lateral palco     chat"
+    "trilho lateral controles chat";
+  height: 100%;
+  height: 100dvh;
+}
+
+.trilho    { grid-area: trilho; }
+.lateral   { grid-area: lateral; }
+.palco     { grid-area: palco; }
+.chat      { grid-area: chat; }
+.controles { grid-area: controles; }
+.abas      { display: none; }
+
+
+/* ============================== 6. Barra de servidores ============================== */
+.trilho {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .55rem;
+  padding: .8rem 0;
+  background: var(--fundo-0);
+  overflow-y: auto;
+}
+
+.trilho__logo { width: 44px; height: 44px; flex: none; }
+
+.trilho__separador {
+  width: 30px;
+  height: 2px;
+  margin: 0;
+  border: none;
+  border-radius: 2px;
+  background: var(--borda);
+  flex: none;
+}
+
+.trilho__lista { display: flex; flex-direction: column; align-items: center; gap: .55rem; }
+
+.trilho__item {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px; height: 46px;
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font: inherit;
+  font-size: .95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-radius .2s;
+}
+.trilho__item:hover,
+.trilho__item--atual { border-radius: 14px; }
+
+/* barrinha laranja do servidor aberto */
+.trilho__item--atual::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  width: 4px; height: 30px;
+  border-radius: 0 4px 4px 0;
+  background: var(--laranja);
+}
+
+/* bolinha verde = estou na call desse servidor */
+.trilho__item--em-call::after {
+  content: "";
+  position: absolute;
+  right: -2px; bottom: -2px;
+  width: 12px; height: 12px;
+  border: 3px solid var(--fundo-0);
+  border-radius: 50%;
+  background: var(--verde);
+}
+
+.trilho__item--novo { background: var(--fundo-3); color: var(--laranja); font-size: 1.6rem; font-weight: 400; }
+.trilho__item--novo:hover { background: var(--laranja); color: var(--texto-no-laranja); }
+
+.trilho__conta {
+  margin-top: auto;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.trilho__conta img {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  outline: 2px solid transparent;
+  transition: outline-color var(--transicao);
+}
+.trilho__conta:hover img { outline-color: var(--laranja); }
+
+
+/* ============================== 7. Painel do servidor ============================== */
+.lateral {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--fundo-2);
+}
+
+.lateral__topo {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  height: var(--altura-topo);
+  padding: 0 .6rem 0 1rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+.lateral__titulo {
+  flex: 1;
+  overflow: hidden;
+  font-size: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lateral__call { display: flex; flex-direction: column; gap: .5rem; padding: 0 .8rem; min-height: 0; }
+
+.secao-titulo {
+  padding: 1rem .2rem .1rem;
+  color: var(--texto-suave);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.pessoas { overflow-y: auto; }
+
+.pessoa {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .4rem .5rem;
+  border-radius: 8px;
+  font-size: .92rem;
+}
+.pessoa:hover { background: var(--fundo-3); }
+.pessoa--vazia { color: var(--texto-suave); font-size: .85rem; }
+.pessoa--vazia:hover { background: none; }
+.pessoa__nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pessoa__status { flex: none; color: var(--texto-suave); font-size: .7rem; white-space: nowrap; }
+.pessoa__vivo {
+  flex: none;
+  font-size: .62rem;
+  white-space: nowrap;
+  padding: .12rem .4rem;
+  border-radius: 5px;
+  background: var(--vermelho);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.lateral__menu {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding: .6rem .5rem;
+  border-top: 1px solid var(--borda);
+}
+.lateral__menu:not(:has(button:not([hidden]))) { display: none; }
+
+
+/* ============================== 8. Palco ============================== */
+.palco {
+  display: flex;
+  flex-direction: column;
+  gap: .9rem;
+  min-height: 0;
+  padding: 1.2rem;
+  overflow-y: auto;
+}
+.palco > * { flex: none; }
+
+.palco__grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: .9rem;
+}
+
+.tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--raio);
+  background: var(--fundo-3);
+  transition: box-shadow .1s;
+}
+.tile.falando { box-shadow: 0 0 0 3px var(--verde); }
+
+.tile video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+.tile__video--espelho { transform: scaleX(-1); }
+
+.tile--tela {
+  aspect-ratio: auto;
+  height: clamp(240px, 58vh, 760px);
+  box-shadow: 0 0 0 2px var(--laranja);
+}
+
+.tile__nome {
+  position: absolute;
+  left: .6rem; bottom: .6rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .25rem .6rem;
+  border-radius: 8px;
+  background: #000b;
+  font-size: .82rem;
+}
+
+.ponto-vivo {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--vermelho);
+  box-shadow: 0 0 8px var(--vermelho);
+  animation: piscar 1.6s infinite;
+}
+@keyframes piscar { 50% { opacity: .4; } }
+
+.tile__acoes {
+  position: absolute;
+  right: .6rem; bottom: .6rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .3rem .5rem;
+  border-radius: 8px;
+  background: #000b;
+  opacity: 0;
+  transition: opacity var(--transicao);
+}
+.tile:hover .tile__acoes,
+.tile:focus-within .tile__acoes { opacity: 1; }
+.tile__volume { width: 90px; accent-color: var(--laranja); }
+
+.vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  padding: 4rem 1rem;
+  color: var(--texto-suave);
+  text-align: center;
+}
+.vazio__logo { opacity: .9; }
+.vazio__titulo { margin-top: .4rem; color: var(--texto); font-size: 1.25rem; }
+.vazio__texto { max-width: 340px; line-height: 1.5; }
+.vazio__botao { margin-top: .6rem; }
+
+
+/* ============================== 9. Chat ============================== */
+.chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--fundo-2);
+}
+
+.chat__topo {
+  display: flex;
+  align-items: center;
+  height: var(--altura-topo);
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--borda);
+}
+.chat__titulo { font-size: 1rem; }
+
+.chat__mensagens {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: .9rem;
+  padding: 1rem;
+  overflow-y: auto;
+}
+.chat__vazio { margin: auto; color: var(--texto-suave); font-size: .9rem; }
+
+.msg { display: flex; gap: .6rem; }
+.msg__avatar { width: 34px; height: 34px; }
+.msg__cabecalho { font-size: .88rem; }
+.msg__hora { margin-left: .35rem; color: var(--texto-suave); font-size: .7rem; }
+.msg__texto { margin-top: .1rem; font-size: .92rem; line-height: 1.4; white-space: pre-wrap; word-break: break-word; }
+
+/* mensagens seguidas da mesma pessoa */
+.msg--continuacao { margin-top: -.7rem; }
+.msg--continuacao .msg__avatar { visibility: hidden; height: 0; }
+.msg--continuacao .msg__cabecalho { display: none; }
+
+.chat__form { padding: .8rem; }
+.chat__form .campo { border-color: transparent; background: var(--fundo-3); }
+
+
+/* ============================== 10. Controles da call ============================== */
+.controles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .7rem;
+  padding-bottom: max(.7rem, env(safe-area-inset-bottom));
+}
+
+.controle {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  min-width: 72px;
+  padding: .55rem .6rem .45rem;
+  border: none;
+  border-radius: var(--raio);
+  background: var(--fundo-3);
+  color: var(--texto);
+  font: inherit;
+  cursor: pointer;
+  transition: background var(--transicao);
+}
+.controle:hover { background: var(--fundo-4); }
+.controle .icone { width: 22px; height: 22px; }
+.controle__rotulo { color: var(--texto-suave); font-size: .72rem; }
+
+.controle--ativo,
+.controle--ativo:hover { background: var(--laranja); color: var(--texto-no-laranja); }
+.controle--ativo .controle__rotulo { color: var(--texto-no-laranja); font-weight: 600; }
+
+.controle--mudo,
+.controle--mudo:hover { background: #ef444422; color: var(--vermelho); }
+/* risco vermelho por cima do ícone */
+.controle--mudo::after {
+  content: "";
+  position: absolute;
+  top: 20px; left: 50%;
+  width: 26px; height: 2.5px;
+  border-radius: 2px;
+  background: var(--vermelho);
+  transform: translateX(-50%) rotate(-45deg);
+}
+
+.controle--sair,
+.controle--sair:hover { background: var(--vermelho); color: #fff; }
+.controle--sair .controle__rotulo { color: #fff; }
+
+.controle--select { min-width: 0; padding: 0; background: none; cursor: default; }
+.controle--select:hover { background: none; }
+.campo--select { height: 100%; min-height: 54px; padding: .5rem; border: none; background: var(--fundo-3); font-size: .8rem; cursor: pointer; }
+
+
+/* ============================== 11. Janelas e avisos ============================== */
+.janela {
+  width: min(380px, 92vw);
+  padding: 1.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 18px;
+  background: var(--fundo-2);
+  color: var(--texto);
+}
+.janela::backdrop { background: #000b; backdrop-filter: blur(3px); }
+.janela__form { display: flex; flex-direction: column; gap: .9rem; }
+.janela__rotulo { color: var(--texto-suave); font-size: .85rem; margin-bottom: -.5rem; }
+.janela__texto { color: var(--texto-suave); line-height: 1.5; }
+.janela__botoes { display: flex; justify-content: flex-end; gap: .5rem; }
+
+.aviso {
+  position: fixed;
+  left: 50%; bottom: 6rem;
+  z-index: 10;
+  padding: .65rem 1.1rem;
+  border-radius: var(--raio-pequeno);
+  background: var(--fundo-4);
+  box-shadow: 0 10px 30px #0008;
+  opacity: 0;
+  transform: translate(-50%, 10px);
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+}
+.aviso.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+
+/* ============================== 12. Responsivo ============================== */
+
+/* telas de toque: ações das telas sempre visíveis */
+@media (hover: none) {
+  .tile__acoes { opacity: 1; }
+}
+
+/* notebook / tablet deitado */
+@media (max-width: 1200px) and (min-width: 901px) {
+  :root { --largura-trilho: 64px; --largura-lateral: 200px; --largura-chat: 270px; }
+  .trilho__item { width: 42px; height: 42px; }
+  .controle { min-width: 60px; }
+}
+
+/* celular e tablet em pé: uma aba por vez */
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 64px 1fr;
+    grid-template-rows: 1fr auto auto;
+    grid-template-areas:
+      "conteudo conteudo"
+      "controles controles"
+      "abas abas";
+  }
+
+  .trilho, .lateral, .palco, .chat, .controles { display: none; }
+
+  .app[data-aba="servidores"] { grid-template-areas: "trilho lateral" "controles controles" "abas abas"; }
+  .app[data-aba="servidores"] .trilho  { display: flex; }
+  .app[data-aba="servidores"] .lateral { display: flex; }
+
+  .app[data-aba="call"] .palco { display: flex; grid-area: conteudo; padding: .7rem; }
+  .app[data-aba="call"] .controles:not([hidden]) { display: flex; }
+
+  .app[data-aba="chat"] .chat { display: flex; grid-area: conteudo; }
+
+  .abas {
+    grid-area: abas;
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--borda);
+    background: var(--fundo-2);
+  }
+  .abas__botao {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: .2rem;
+    padding: .7rem .3rem;
+    border: none;
+    background: none;
+    color: var(--texto-suave);
+    font: inherit;
+    font-size: .8rem;
+    cursor: pointer;
+  }
+  .abas__botao .icone { width: 22px; height: 22px; }
+  .abas__botao--ativo { color: var(--laranja); }
+
+  .controles { gap: .35rem; padding: .5rem .4rem; }
+  .controle { flex: 1; min-width: 0; max-width: 84px; padding: .5rem .2rem .4rem; }
+  .controle__rotulo { font-size: .66rem; }
+
+  .tile--tela { height: auto; aspect-ratio: 16 / 9; }
+  .palco__grade { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .6rem; }
+  .avatar--grande { width: 52px; height: 52px; font-size: 1.2rem; }
+
+  .campo { font-size: 16px; } /* evita o zoom automático do iPhone */
+
+  .lateral__topo,
+  .chat__topo {
+    height: calc(var(--altura-topo) + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+  }
+}

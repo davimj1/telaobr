@@ -1,989 +1,207 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<title>Telão</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ffa53d%22/%3E%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ff5a00%22/%3E%20%3C/linearGradient%3E%20%3C/defs%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22url%28%23g%29%22/%3E%20%3Crect%20x%3D%2211%22%20y%3D%2214%22%20width%3D%2242%22%20height%3D%2228%22%20rx%3D%226%22%20fill%3D%22%231f0e00%22/%3E%20%3Crect%20x%3D%2228.5%22%20y%3D%2242%22%20width%3D%227%22%20height%3D%225%22%20fill%3D%22%231f0e00%22/%3E%20%3Crect%20x%3D%2221%22%20y%3D%2247%22%20width%3D%2222%22%20height%3D%224.5%22%20rx%3D%222.25%22%20fill%3D%22%231f0e00%22/%3E%20%3Ccircle%20cx%3D%2232%22%20cy%3D%2228%22%20r%3D%224.2%22%20fill%3D%22%23ff8a2a%22/%3E%20%3Cpath%20d%3D%22M24.6%2020.6a10.5%2010.5%200%200%200%200%2014.8M39.4%2020.6a10.5%2010.5%200%200%201%200%2014.8%22%20stroke%3D%22%23ff8a2a%22%20stroke-width%3D%223%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22/%3E%20%3C/svg%3E">
-<meta name="theme-color" content="#ff7a1a">
-<style>
-  :root{
-    --bg:#0e0c0a; --bg2:#151210; --bg3:#1e1a16; --bg4:#29231d; --line:#2c251f;
-    --txt:#f3eee9; --txt2:#a39a90; --lar:#ff7a1a; --lartxt:#1f0e00; --verm:#ef4444; --verde:#22c55e;
-    --raio:14px;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-  button{font:inherit;cursor:pointer;border:none;border-radius:10px;padding:.6rem 1rem;background:var(--bg3);color:var(--txt);transition:background .15s,transform .1s}
-  button:hover{background:var(--bg4)}
-  button:active{transform:scale(.97)}
-  button:disabled{opacity:.45;cursor:default}
-  button.prim{background:var(--lar);color:var(--lartxt);font-weight:700}
-  button.prim:hover{background:#ff8f3f}
-  button.ativo{background:var(--verde);color:#052e14}
-  button.texto{background:none;color:var(--txt2);padding:.35rem .5rem;font-size:.85rem;text-align:left}
-  button.texto:hover{color:var(--txt)}
-  button.texto.perigo{color:var(--verm)}
-  input,select{font:inherit;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.65rem .85rem}
-  input:focus,select:focus{outline:2px solid var(--lar);outline-offset:-1px}
-  [hidden]{display:none!important}
-  svg{display:block}
-  ::-webkit-scrollbar{width:8px} ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:8px}
-
-  /* ---------- Login ---------- */
-  #login{min-height:100%;display:grid;place-items:center;padding:1.5rem;background:radial-gradient(60% 50% at 50% 0%,#ff7a1a22,transparent)}
-  .cartao{width:min(380px,100%);display:flex;flex-direction:column;align-items:center;gap:1.1rem;text-align:center}
-  .cartao .logo-svg{width:88px;height:88px;filter:drop-shadow(0 10px 30px #ff7a1a55)}
-  .marca{font-size:2.4rem;font-weight:800;letter-spacing:-.02em;margin:0}
-  .marca span{color:var(--lar)}
-  .sub{color:var(--txt2);margin:0;line-height:1.5}
-  #btGoogle{display:flex;align-items:center;justify-content:center;gap:.7rem;width:100%;background:#fff;color:#1f1f1f;font-weight:600;padding:.8rem;margin-top:.4rem}
-  #btGoogle:hover{background:#f1f1f1}
-  .erro{color:var(--verm);font-size:.88rem;min-height:1.2em;line-height:1.4}
-
-  /* ---------- App ---------- */
-  #app{height:100%;height:100dvh;display:grid;grid-template-columns:72px 240px 1fr 320px;grid-template-rows:1fr auto}
-
-  #trilho{grid-row:1/3;background:#090807;display:flex;flex-direction:column;align-items:center;gap:.55rem;padding:.8rem 0;overflow:auto}
-  #trilho > .logo-svg{width:44px;height:44px;flex:none}
-  .sep{width:30px;height:2px;border-radius:2px;background:var(--line);flex:none}
-  #listaSrv{display:flex;flex-direction:column;align-items:center;gap:.55rem}
-  .srv{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.95rem;color:#fff;cursor:pointer;flex:none;transition:border-radius .2s;position:relative;user-select:none}
-  .srv:hover,.srv.atual{border-radius:14px}
-  .srv.atual::before{content:"";position:absolute;left:-13px;width:4px;height:30px;border-radius:0 4px 4px 0;background:var(--lar)}
-  .srv.call::after{content:"";position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:var(--verde);border:3px solid #090807}
-  .srv.mais{background:var(--bg3);color:var(--lar);font-size:1.6rem;font-weight:400}
-  .srv.mais:hover{background:var(--lar);color:var(--lartxt)}
-  #eu{margin-top:auto;color:transparent;font-size:0;width:42px;height:42px;border-radius:50%;object-fit:cover;cursor:pointer;flex:none;background:var(--bg3);outline:2px solid transparent;transition:outline-color .15s}
-  #eu:hover{outline-color:var(--lar)}
-
-  #lateral{grid-row:1/3;background:var(--bg2);display:flex;flex-direction:column;min-height:0}
-  #lateral .topo{height:56px;padding:0 .6rem 0 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.4rem}
-  #nomeSrv{flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .icone{width:34px;height:34px;padding:7px;border-radius:8px;background:none;color:var(--txt2)}
-  .icone:hover{background:var(--bg3);color:var(--txt)}
-  .icone svg,.ctl svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .secao{padding:1rem 1rem .4rem;color:var(--txt2);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
-  #btCall{margin:0 .8rem .4rem}
-  #pessoas{list-style:none;margin:0;padding:0 .5rem;overflow:auto}
-  #pessoas li{display:flex;align-items:center;gap:.6rem;padding:.4rem .5rem;border-radius:8px;font-size:.92rem}
-  #pessoas li:hover{background:var(--bg3)}
-  #pessoas li.nada{color:var(--txt2);font-size:.85rem}
-  .av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.78rem;flex:none;color:#fff;background-size:cover;background-position:center;transition:box-shadow .1s}
-  .falando{box-shadow:0 0 0 2px var(--bg2),0 0 0 4px var(--verde)}
-  .tag{margin-left:auto;font-size:.68rem;color:var(--txt2)}
-  .tag.live{color:#fff;background:var(--verm);padding:.12rem .4rem;border-radius:5px;font-weight:800;letter-spacing:.04em}
-  #menuSrv{margin-top:auto;padding:.6rem .5rem;border-top:1px solid var(--line);display:flex;flex-direction:column}
-
-  #palco{min-height:0;overflow:auto;padding:1.2rem;display:flex;flex-direction:column;gap:.9rem;background:var(--bg)}
-  #palco > *{flex:none}
-  .grade{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
-  .tile{position:relative;background:var(--bg3);border-radius:var(--raio);overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}
-  .tile.tela{aspect-ratio:auto;height:clamp(240px,58vh,760px);box-shadow:0 0 0 2px var(--lar)}
-  .tile video{width:100%;height:100%;object-fit:contain;background:#000}
-  .tile video.espelho{transform:scaleX(-1)}
-  .tile.falando-tile{box-shadow:0 0 0 3px var(--verde)}
-  .tile .av{width:68px;height:68px;font-size:1.6rem}
-  .tile .nome{position:absolute;left:.6rem;bottom:.6rem;background:#000b;padding:.25rem .6rem;border-radius:8px;font-size:.82rem;display:flex;align-items:center;gap:.4rem}
-  .ponto{width:8px;height:8px;border-radius:50%;background:var(--verm);box-shadow:0 0 8px var(--verm)}
-  .tile .acoes{position:absolute;right:.6rem;bottom:.6rem;display:flex;gap:.5rem;align-items:center;background:#000b;padding:.3rem .5rem;border-radius:8px;opacity:0;transition:opacity .15s}
-  .tile:hover .acoes{opacity:1}
-  .tile .acoes button{padding:.25rem .6rem;font-size:.8rem}
-  .tile .acoes input[type=range]{width:90px;padding:0;accent-color:var(--lar)}
-  .vazio{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.6rem;padding:4rem 1rem;color:var(--txt2)}
-  .vazio .logo-svg{width:64px;height:64px;opacity:.9}
-  .vazio h2{margin:.4rem 0 0;color:var(--txt);font-size:1.25rem}
-  .vazio p{margin:0;max-width:340px;line-height:1.5}
-  .vazio button{margin-top:.6rem}
-
-  #chat{grid-row:1/3;grid-column:4;background:var(--bg2);display:flex;flex-direction:column;min-height:0}
-  #chat .topo{height:56px;display:flex;align-items:center;padding:0 1rem;border-bottom:1px solid var(--line);font-weight:700}
-  #msgs{flex:1;overflow:auto;padding:1rem;display:flex;flex-direction:column;gap:.9rem}
-  .msg{display:flex;gap:.6rem}
-  .msg .av{width:34px;height:34px}
-  .msg .quem{font-weight:700;font-size:.88rem}
-  .msg .hora{color:var(--txt2);font-size:.7rem;margin-left:.35rem;font-weight:400}
-  .msg .txt{white-space:pre-wrap;word-break:break-word;font-size:.92rem;line-height:1.4;margin-top:.1rem}
-  #formChat{padding:.8rem}
-  #inMsg{width:100%;background:var(--bg3);border-color:transparent}
-
-  #controles{grid-column:3;display:flex;gap:.5rem;justify-content:center;align-items:center;padding:.7rem;background:var(--bg)}
-  .ctl{display:flex;flex-direction:column;align-items:center;gap:.25rem;min-width:72px;padding:.55rem .6rem .45rem;border-radius:var(--raio);position:relative}
-  .ctl svg{width:22px;height:22px}
-  .ctl .rot{font-size:.72rem;color:var(--txt2)}
-  .ctl.ativo{background:var(--lar);color:var(--lartxt)}
-  .ctl.ativo .rot{color:var(--lartxt);font-weight:600}
-  .ctl.mudo{background:#ef444422;color:var(--verm)}
-  .ctl.mudo::after{content:"";position:absolute;top:10px;left:50%;width:26px;height:2.5px;background:var(--verm);transform:translateX(-50%) rotate(-45deg) translateY(10px);border-radius:2px}
-  .ctl.sair{background:var(--verm);color:#fff}
-  .ctl.sair .rot{color:#fff}
-  #selQualidade{background:var(--bg3);border:none;font-size:.8rem;padding:.5rem;align-self:stretch}
-
-  dialog{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:18px;padding:1.5rem;width:min(380px,92vw)}
-  dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}
-  dialog form{display:flex;flex-direction:column;gap:.9rem}
-  dialog h3{margin:0}
-  dialog .botoes{display:flex;gap:.5rem;justify-content:flex-end}
-  dialog .botoes .perigo{background:var(--verm);color:#fff}
-
-  #aviso{position:fixed;left:50%;bottom:6rem;transform:translate(-50%,10px);background:var(--bg4);padding:.65rem 1.1rem;border-radius:10px;opacity:0;transition:.2s;pointer-events:none;z-index:9;box-shadow:0 10px 30px #0008}
-  #aviso.on{opacity:1;transform:translate(-50%,0)}
-
-  #abas{display:none}
-  .badge{background:var(--verm);color:#fff;border-radius:99px;font-size:.65rem;font-weight:800;padding:0 .35rem;margin-left:.3rem}
-  #controles{padding-bottom:max(.7rem,env(safe-area-inset-bottom))}
-  @media (hover:none){ .tile .acoes{opacity:1} }
-
-  /* Notebook / tablet deitado */
-  @media (max-width:1200px) and (min-width:901px){
-    #app{grid-template-columns:64px 200px 1fr 270px}
-    .srv,#eu{width:42px;height:42px}
-    .ctl{min-width:60px}
-  }
-
-  /* Celular e tablet em pé: uma aba por vez */
-  @media (max-width:900px){
-    #app{grid-template-columns:64px 1fr;grid-template-rows:1fr auto auto}
-    #trilho,#lateral,#palco,#controles,#chat{display:none}
-    #app[data-aba="srv"] #trilho{display:flex;grid-row:1;grid-column:1}
-    #app[data-aba="srv"] #lateral{display:flex;grid-row:1;grid-column:2}
-    #app[data-aba="call"] #palco{display:flex;grid-row:1;grid-column:1/3;padding:.7rem}
-    #app[data-aba="call"] #controles:not([hidden]){display:flex;grid-row:2;grid-column:1/3}
-    #app[data-aba="chat"] #chat{display:flex;grid-row:1;grid-column:1/3}
-    #abas{display:flex;grid-row:3;grid-column:1/3;background:var(--bg2);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-    #abas button{flex:1;background:none;border-radius:0;padding:.7rem .3rem;color:var(--txt2);font-size:.8rem;display:flex;flex-direction:column;align-items:center;gap:.2rem}
-    #abas button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    #abas button.on{color:var(--lar)}
-    #controles{gap:.35rem;padding:.5rem .4rem}
-    .ctl{min-width:0;flex:1;max-width:84px;padding:.5rem .2rem .4rem}
-    .ctl .rot{font-size:.66rem}
-    .tile.tela{height:auto;aspect-ratio:16/9}
-    .grade{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem}
-    .tile .av{width:52px;height:52px;font-size:1.2rem}
-    input,select{font-size:16px} /* evita o zoom automático do iPhone */
-    #lateral .topo,#chat .topo{padding-top:env(safe-area-inset-top);height:calc(56px + env(safe-area-inset-top))}
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Telão: servidores com chat, call, câmera e transmissão de tela para você e seus amigos.">
+  <meta name="theme-color" content="#ff7a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Telão</title>
+  <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+  <link rel="apple-touch-icon" href="img/logo.png">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<!-- ============ LOGIN ============ -->
-<section id="login">
-  <div class="cartao">
-    <svg class="logo-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffa53d"/>
-      <stop offset="1" stop-color="#ff5a00"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="16" fill="url(#lg)"/>
-  <rect x="11" y="14" width="42" height="28" rx="6" fill="#1f0e00"/>
-  <rect x="28.5" y="42" width="7" height="5" fill="#1f0e00"/>
-  <rect x="21" y="47" width="22" height="4.5" rx="2.25" fill="#1f0e00"/>
-  <circle cx="32" cy="28" r="4.2" fill="#ff8a2a"/>
-  <path d="M24.6 20.6a10.5 10.5 0 0 0 0 14.8M39.4 20.6a10.5 10.5 0 0 1 0 14.8" stroke="#ff8a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
-</svg>
-    <h1 class="marca">Tel<span>ão</span></h1>
-    <p class="sub">Seus servidores com chat, call, câmera<br>e transmissão de tela, só pra galera.</p>
-    <button id="btGoogle">
-      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
-      Entrar com Google
-    </button>
-    <div class="erro" id="erroLogin"></div>
-    <div class="sub" id="avisoNav" hidden style="font-size:.88rem"></div>
+  <!-- ================================================= LOGIN -->
+  <main id="telaLogin" class="login">
+    <section class="login__cartao" aria-labelledby="tituloLogin">
+      <img class="login__logo" src="img/logo.svg" alt="Logo do Telão: uma tela com o sinal de ao vivo" width="88" height="88">
+      <h1 id="tituloLogin" class="marca">Tel<span class="marca__destaque">ão</span></h1>
+      <p class="login__texto">Seus servidores com chat, call, câmera e transmissão de tela, só pra galera.</p>
+      <button id="btGoogle" class="botao botao--google" type="button">
+        <img src="img/google.svg" alt="" width="18" height="18">
+        Entrar com Google
+      </button>
+      <p id="erroLogin" class="login__erro" role="alert"></p>
+      <p id="avisoNavegador" class="login__aviso" hidden>
+        Você abriu pelo navegador de um app (WhatsApp, Instagram…). O Google bloqueia login aí.
+        <strong>Toque nos ⋮ ou no ícone de compartilhar e escolha “Abrir no navegador”.</strong>
+      </p>
+    </section>
+  </main>
+
+  <!-- ================================================= APP -->
+  <div id="telaApp" class="app" data-aba="servidores" hidden>
+
+    <!-- Barra de servidores (esquerda) -->
+    <nav class="trilho" aria-label="Seus servidores">
+      <img class="trilho__logo" src="img/logo.svg" alt="Telão" width="44" height="44">
+      <hr class="trilho__separador">
+      <ul id="listaServidores" class="trilho__lista"></ul>
+      <button id="btNovoServidor" class="trilho__item trilho__item--novo" type="button" title="Criar servidor" aria-label="Criar servidor">+</button>
+      <button id="btConta" class="trilho__conta" type="button" title="Sua conta">
+        <img id="fotoConta" src="img/logo.svg" alt="Sua conta" width="42" height="42">
+      </button>
+    </nav>
+
+    <!-- Painel do servidor -->
+    <aside class="lateral" aria-labelledby="nomeServidor">
+      <header class="lateral__topo">
+        <h2 id="nomeServidor" class="lateral__titulo">Nenhum servidor</h2>
+        <button id="btConvite" class="botao-icone" type="button" title="Copiar convite" aria-label="Copiar convite" hidden>
+          <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
+        </button>
+      </header>
+
+      <section class="lateral__call" aria-labelledby="tituloCall">
+        <h3 id="tituloCall" class="secao-titulo">Call</h3>
+        <button id="btCall" class="botao botao--primario botao--largo" type="button" disabled>Entrar na call</button>
+        <ul id="listaPessoas" class="pessoas" aria-label="Quem está na call"></ul>
+      </section>
+
+      <footer class="lateral__menu">
+        <button id="btRenomear" class="botao-texto" type="button" hidden>Renomear servidor</button>
+        <button id="btSairServidor" class="botao-texto" type="button" hidden>Sair do servidor</button>
+        <button id="btExcluir" class="botao-texto botao-texto--perigo" type="button" hidden>Excluir servidor</button>
+      </footer>
+    </aside>
+
+    <!-- Telas ao vivo e pessoas -->
+    <main id="palco" class="palco" aria-label="Call"></main>
+
+    <!-- Chat -->
+    <section class="chat" aria-labelledby="tituloChat">
+      <header class="chat__topo">
+        <h2 id="tituloChat" class="chat__titulo"># chat</h2>
+      </header>
+      <ol id="mensagens" class="chat__mensagens" aria-live="polite"></ol>
+      <form id="formChat" class="chat__form" autocomplete="off">
+        <label for="campoMensagem" class="so-leitor">Mensagem</label>
+        <input id="campoMensagem" class="campo" type="text" maxlength="500" placeholder="Escreva uma mensagem…" disabled>
+      </form>
+    </section>
+
+    <!-- Controles da call -->
+    <footer id="controles" class="controles" hidden>
+      <button id="btMic" class="controle" type="button">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        <span class="controle__rotulo">Microfone</span>
+      </button>
+      <button id="btCam" class="controle" type="button" title="Câmera">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3"/></svg>
+        <span class="controle__rotulo">Câmera</span>
+      </button>
+      <button id="btSurdo" class="controle" type="button">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>
+        <span class="controle__rotulo">Áudio</span>
+      </button>
+      <button id="btTela" class="controle" type="button">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M12 13V7M9 10l3-3 3 3"/></svg>
+        <span class="controle__rotulo">Transmitir</span>
+      </button>
+      <label id="campoQualidade" class="controle controle--select">
+        <span class="so-leitor">Qualidade da transmissão</span>
+        <select id="selQualidade" class="campo campo--select"></select>
+      </label>
+      <button id="btDesligar" class="controle controle--sair" type="button" title="Sair da call">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 13.5c4.5-4 10.5-4 15 0l-1.8 2.6-3.2-1.2v-2.4a9 9 0 0 0-5 0v2.4l-3.2 1.2Z"/></svg>
+        <span class="controle__rotulo">Sair</span>
+      </button>
+    </footer>
+
+    <!-- Abas (só no celular) -->
+    <nav class="abas" aria-label="Seções">
+      <button class="abas__botao" type="button" data-aba="servidores">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+        Servidores
+      </button>
+      <button class="abas__botao" type="button" data-aba="call">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+        Call
+      </button>
+      <button class="abas__botao" type="button" data-aba="chat">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4Z"/></svg>
+        <span>Chat <span id="badgeChat" class="badge" hidden></span></span>
+      </button>
+    </nav>
   </div>
-</section>
 
-<!-- ============ APP ============ -->
-<section id="app" hidden>
-  <nav id="trilho">
-    <svg class="logo-svg" style="cursor:default" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="lg3" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffa53d"/>
-      <stop offset="1" stop-color="#ff5a00"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="16" fill="url(#lg3)"/>
-  <rect x="11" y="14" width="42" height="28" rx="6" fill="#1f0e00"/>
-  <rect x="28.5" y="42" width="7" height="5" fill="#1f0e00"/>
-  <rect x="21" y="47" width="22" height="4.5" rx="2.25" fill="#1f0e00"/>
-  <circle cx="32" cy="28" r="4.2" fill="#ff8a2a"/>
-  <path d="M24.6 20.6a10.5 10.5 0 0 0 0 14.8M39.4 20.6a10.5 10.5 0 0 1 0 14.8" stroke="#ff8a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
-</svg>
-    <div class="sep"></div>
-    <div id="listaSrv"></div>
-    <div class="srv mais" id="btNovoSrv" title="Criar servidor">+</div>
-    <img id="eu" alt="sua conta" title="Sua conta">
-  </nav>
-
-  <aside id="lateral">
-    <div class="topo">
-      <div id="nomeSrv">Nenhum servidor</div>
-      <button class="icone" id="btConvite" title="Copiar convite" hidden><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
-    </div>
-    <div class="secao">Call</div>
-    <button class="prim" id="btCall" disabled>Entrar na call</button>
-    <ul id="pessoas"></ul>
-    <div id="menuSrv">
-      <button class="texto" id="btRenomear" hidden>Renomear servidor</button>
-      <button class="texto" id="btSairSrv" hidden>Sair do servidor</button>
-      <button class="texto perigo" id="btExcluirSrv" hidden>Excluir servidor</button>
-    </div>
-  </aside>
-
-  <main id="palco"></main>
-
-  <aside id="chat">
-    <div class="topo" id="tituloChat">Chat</div>
-    <div id="msgs"></div>
-    <form id="formChat" autocomplete="off">
-      <input id="inMsg" maxlength="500" placeholder="Escreva uma mensagem…" disabled>
-      <button id="btEnviar" hidden disabled></button>
+  <!-- ================================================= JANELAS -->
+  <dialog id="dlgServidor" class="janela">
+    <form method="dialog" class="janela__form">
+      <h3 id="tituloDlgServidor" class="janela__titulo">Criar servidor</h3>
+      <label for="campoNomeServidor" class="janela__rotulo">Nome do servidor</label>
+      <input id="campoNomeServidor" class="campo" type="text" maxlength="40" placeholder="Ex.: Rolê de Sexta" required>
+      <div class="janela__botoes">
+        <button class="botao" value="cancelar" formnovalidate>Cancelar</button>
+        <button class="botao botao--primario" value="ok">Salvar</button>
+      </div>
     </form>
-  </aside>
+  </dialog>
 
-  <nav id="abas">
-    <button data-aba="srv"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Servidores</button>
-    <button data-aba="call"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Call</button>
-    <button data-aba="chat"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4Z"/></svg><span>Chat<span class="badge" id="badgeChat" hidden></span></span></button>
-  </nav>
+  <dialog id="dlgConta" class="janela">
+    <form method="dialog" class="janela__form">
+      <h3 class="janela__titulo">Sua conta</h3>
+      <p id="infoConta" class="janela__texto"></p>
+      <div class="janela__botoes">
+        <button class="botao" value="fechar">Fechar</button>
+        <button class="botao botao--perigo" value="sair">Sair da conta</button>
+      </div>
+    </form>
+  </dialog>
 
-  <footer id="controles" hidden>
-    <button class="ctl" id="btMic" title="Microfone"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span class="rot">Microfone</span></button>
-    <button class="ctl" id="btCam" title="Câmera"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3"/></svg><span class="rot">Câmera</span></button>
-    <button class="ctl" id="btSurdo" title="Áudio"><svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg><span class="rot">Áudio</span></button>
-    <button class="ctl" id="btTela" title="Transmitir"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M12 13V7M9 10l3-3 3 3"/></svg><span class="rot">Transmitir</span></button>
-    <select id="selQualidade" title="Qualidade da transmissão">
-      <option value="720p30">720p 30</option>
-      <option value="1080p30" selected>1080p 30</option>
-      <option value="1080p60">1080p 60</option>
-    </select>
-    <button class="ctl sair" id="btDesligar" title="Sair da call"><svg viewBox="0 0 24 24"><path d="M4.5 13.5c4.5-4 10.5-4 15 0l-1.8 2.6-3.2-1.2v-2.4a9 9 0 0 0-5 0v2.4l-3.2 1.2Z"/></svg><span class="rot">Sair</span></button>
-  </footer>
-</section>
+  <div id="aviso" class="aviso" role="status" aria-live="polite"></div>
+  <div id="audios" hidden></div>
 
-<dialog id="dlgSrv">
-  <form method="dialog" id="formSrv">
-    <h3 id="dlgTitulo">Criar servidor</h3>
-    <input id="inNomeSrv" maxlength="40" placeholder="Nome do servidor" required>
-    <div class="botoes">
-      <button value="cancelar" formnovalidate>Cancelar</button>
-      <button class="prim" value="ok">Salvar</button>
+  <!-- ================================================= MODELOS (usados pelo JavaScript) -->
+  <template id="modeloMensagem">
+    <li class="msg">
+      <div class="msg__corpo">
+        <p class="msg__cabecalho"><strong class="msg__autor"></strong> <time class="msg__hora"></time></p>
+        <p class="msg__texto"></p>
+      </div>
+    </li>
+  </template>
+
+  <template id="modeloPessoa">
+    <li class="pessoa">
+      <span class="pessoa__nome"></span>
+      <span class="pessoa__vivo" hidden>AO VIVO</span>
+      <span class="pessoa__status"></span>
+    </li>
+  </template>
+
+  <template id="modeloTile">
+    <article class="tile">
+      <span class="tile__nome"></span>
+    </article>
+  </template>
+
+  <template id="modeloTela">
+    <article class="tile tile--tela">
+      <video autoplay playsinline muted></video>
+      <span class="tile__nome"><span class="ponto-vivo" aria-hidden="true"></span><span class="tile__rotulo"></span></span>
+      <div class="tile__acoes">
+        <label class="tile__campo">
+          <span class="so-leitor">Volume</span>
+          <input class="tile__volume" type="range" min="0" max="1" step="0.05">
+        </label>
+        <button class="botao botao--pequeno tile__cheia" type="button">Tela cheia</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="modeloVazio">
+    <div class="vazio">
+      <img class="vazio__logo" src="img/logo.svg" alt="" width="64" height="64">
+      <h2 class="vazio__titulo"></h2>
+      <p class="vazio__texto"></p>
+      <button class="botao botao--primario vazio__botao" type="button" hidden></button>
     </div>
-  </form>
-</dialog>
+  </template>
 
-<dialog id="dlgConta">
-  <form method="dialog">
-    <h3>Sua conta</h3>
-    <div id="contaInfo" class="sub" style="text-align:left"></div>
-    <div class="botoes">
-      <button value="fechar">Fechar</button>
-      <button class="perigo" value="sair" id="btLogout">Sair da conta</button>
-    </div>
-  </form>
-</dialog>
-
-<div id="aviso"></div>
-<div id="audios" hidden></div>
-
-<script type="module">
-// =====================================================================
-//  1) COLE AQUI A CONFIGURAÇÃO DO SEU PROJETO FIREBASE (veja LEIA-ME.md)
-// =====================================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyBDF5sBzSjxWTTghkF1Gm7TzFYCkb0Lg8Q",
-  authDomain: "telaobr.firebaseapp.com",
-  projectId: "telaobr",
-  storageBucket: "telaobr.firebasestorage.app",
-  messagingSenderId: "270740684038",
-  appId: "1:270740684038:web:210f5124c34f60f5b6f287",
-  measurementId: "G-0M4QS5D2E5"
-};
-
-// =====================================================================
-//  2) SERVIDORES DE CONEXÃO (STUN resolve a maioria; TURN é opcional)
-// =====================================================================
-const ICE = {
-  iceServers: [
-    { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
-    // { urls: "turn:SEU_SERVIDOR:3478", username: "usuario", credential: "senha" },
-  ]
-};
-
-const QUALIDADES = {
-  "720p30":  { width: 1280, height: 720,  frameRate: 30, bitrate: 2_500_000 },
-  "1080p30": { width: 1920, height: 1080, frameRate: 30, bitrate: 4_500_000 },
-  "1080p60": { width: 1920, height: 1080, frameRate: 60, bitrate: 7_000_000 },
-};
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore, doc, setDoc, updateDoc, deleteDoc, collection, addDoc, onSnapshot,
-  query, where, orderBy, limitToLast, arrayUnion, arrayRemove
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const fb = initializeApp(firebaseConfig);
-const auth = getAuth(fb);
-const db = getFirestore(fb);
-
-// ---------------------------------------------------------------- estado
-const $ = id => document.getElementById(id);
-const S = {
-  user: null, nome: "", foto: "",
-  servidores: new Map(),   // id -> dados
-  atual: null,             // servidor aberto
-  call: null,              // servidor onde está em call (ou null)
-  sessao: null, entrouEm: 0, batida: null,
-  pessoas: new Map(),      // quem está na call do servidor aberto
-  pares: new Map(),        // conexões WebRTC
-  mic: null, tela: null, cam: null, surdo: false,
-  unsubSrvs: null, unsubChat: null, unsubPessoas: null, unsubSinais: null,
-};
-const TX = { MIC: 0, VIDEO: 1, SOM_TELA: 2, CAM: 3 }; // ordem fixa dos canais de mídia
-
-// ---------------------------------------------------------------- utilidades
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-const cor = txt => { let h = 0; for (const c of String(txt)) h = (h * 31 + c.charCodeAt(0)) % 360; return `hsl(${h} 55% 45%)`; };
-const iniciais = n => String(n || "?").trim().split(/\s+/).map(p => p[0]).join("").slice(0, 2).toUpperCase();
-const hora = ts => new Date(ts).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-const gerar = () => Math.random().toString(36).slice(2, 10);
-let avisoT;
-function aviso(t) { const a = $("aviso"); a.textContent = t; a.classList.add("on"); clearTimeout(avisoT); avisoT = setTimeout(() => a.classList.remove("on"), 2600); }
-const fotoSegura = url => /^https:\/\//.test(url || "") ? url : "";
-function avatarHTML(nome, foto, id = "", classe = "av") {
-  const f = fotoSegura(foto);
-  const idAttr = id ? ` id="${id}"` : "";
-  return f
-    ? `<div class="${classe}"${idAttr} style="background-image:url('${esc(f)}')"></div>`
-    : `<div class="${classe}"${idAttr} style="background:${cor(nome)}">${esc(iniciais(nome))}</div>`;
-}
-const rotulo = (id, t) => { const el = $(id); el.querySelector(".rot").textContent = t; el.title = t; };
-const srvDoc = (sid, ...p) => doc(db, "servidores", sid, ...p);
-const srvCol = (sid, ...p) => collection(db, "servidores", sid, ...p);
-
-let ctxAudio;
-// ---------------------------------------------------------------- compatibilidade
-const UA = navigator.userAgent;
-const NAVEGADOR_DE_APP = /FBAN|FBAV|Instagram|Line\/|WhatsApp|Snapchat|TikTok|musical_ly|Twitter|; wv\)/i.test(UA);
-const PODE_TRANSMITIR = !!navigator.mediaDevices?.getDisplayMedia;
-const TEM_WEBRTC = !!window.RTCPeerConnection && !!navigator.mediaDevices?.getUserMedia;
-const TEM_DIALOG = typeof HTMLDialogElement === "function" && typeof document.createElement("dialog").showModal === "function";
-if (NAVEGADOR_DE_APP) {
-  $("avisoNav").hidden = false;
-  $("avisoNav").innerHTML = "Você abriu pelo navegador de um app (WhatsApp, Instagram…). O Google bloqueia login aí.<br><b>Toque nos ⋮ ou no ícone de compartilhar e escolha “Abrir no navegador”</b> (Chrome ou Safari).";
-}
-if (!PODE_TRANSMITIR) { $("btTela").hidden = true; $("selQualidade").hidden = true; }
-const ehCelular = () => matchMedia("(max-width:900px)").matches;
-
-// abas do celular
-let naoLidas = 0;
-function irPara(aba) {
-  $("app").dataset.aba = aba;
-  document.querySelectorAll("#abas button").forEach(b => b.classList.toggle("on", b.dataset.aba === aba));
-  if (aba === "chat") { naoLidas = 0; $("badgeChat").hidden = true; const m = $("msgs"); m.scrollTop = m.scrollHeight; }
-}
-document.querySelectorAll("#abas button").forEach(b => (b.onclick = () => irPara(b.dataset.aba)));
-irPara("srv");
-
-// iPhone/Android: libera o som no primeiro toque (navegadores bloqueiam áudio automático)
-function destravarAudio() {
-  ctxAudio?.resume?.();
-  for (const par of S.pares.values()) par.el.play().catch(() => {});
-}
-document.addEventListener("pointerdown", destravarAudio, { passive: true });
-document.addEventListener("visibilitychange", () => { if (!document.hidden) { destravarAudio(); if (S.call) manterTelaAcesa(); } });
-
-// mantém a tela do celular acesa durante a call
-let travaTela = null;
-async function manterTelaAcesa() { try { travaTela = await navigator.wakeLock?.request("screen"); } catch {} }
-function soltarTela() { travaTela?.release?.().catch(() => {}); travaTela = null; }
-
-// tela cheia que funciona também no iPhone
-function telaCheia(div) {
-  const v = div.querySelector("video");
-  if (div.requestFullscreen) return div.requestFullscreen().catch(() => v?.webkitEnterFullscreen?.());
-  if (div.webkitRequestFullscreen) return div.webkitRequestFullscreen();
-  v?.webkitEnterFullscreen?.();
-}
-
-// ---------------------------------------------------------------- login
-if (firebaseConfig.apiKey === "COLE_AQUI") $("erroLogin").textContent = "Falta colar a configuração do Firebase no index.html.";
-function explicarErro(e) {
-  if (e.code === "auth/unauthorized-domain") {
-    if (location.protocol === "file:")
-      return "Você abriu o arquivo direto do PC (file://). O login com Google não funciona assim: use o Live Server do VS Code ou o site no GitHub Pages.";
-    return `O endereço "${location.hostname}" não está autorizado. No Firebase: Authentication → Configurações → Domínios autorizados → Adicionar domínio → ${location.hostname}`;
-  }
-  return "Erro no login: " + (e.code || e.message);
-}
-getRedirectResult(auth).catch(e => ($("erroLogin").textContent = explicarErro(e)));
-
-$("btGoogle").onclick = async () => {
-  $("erroLogin").textContent = "";
-  if (NAVEGADOR_DE_APP) { $("erroLogin").textContent = "Abra o site no Chrome ou no Safari pra entrar com Google."; return; }
-  const prov = new GoogleAuthProvider();
-  prov.setCustomParameters({ prompt: "select_account" });
-  try { await signInWithPopup(auth, prov); }
-  catch (e) {
-    if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") return signInWithRedirect(auth, prov);
-    if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") $("erroLogin").textContent = explicarErro(e);
-  }
-};
-
-onAuthStateChanged(auth, async user => {
-  if (!user) {
-    S.user = null;
-    $("login").hidden = false; $("app").hidden = true;
-    return;
-  }
-  S.user = user;
-  S.nome = user.displayName || (user.email || "Sem nome").split("@")[0];
-  S.foto = user.photoURL || "";
-  $("login").hidden = true; $("app").hidden = false;
-  $("eu").src = fotoSegura(S.foto) || "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><rect width='48' height='48' fill='${cor(S.nome)}'/><text x='24' y='31' font-size='20' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='700'>${iniciais(S.nome)}</text></svg>`);
-  await setDoc(doc(db, "usuarios", user.uid), { nome: S.nome, foto: S.foto, visto: Date.now() }, { merge: true }).catch(() => {});
-  ouvirServidores();
-  await tratarConvite();
-  renderTudo();
-});
-
-async function sairDaConta() {
-  await sairDaCall();
-  S.unsubSrvs?.(); S.unsubChat?.(); S.unsubPessoas?.();
-  S.servidores.clear(); S.atual = null;
-  await signOut(auth);
-}
-$("eu").onclick = () => {
-  if (!TEM_DIALOG) { if (confirm(`Conectado como ${S.nome}.\nSair da conta?`)) sairDaConta(); return; }
-  $("contaInfo").innerHTML = `<b>${esc(S.nome)}</b><br>${esc(S.user?.email || "")}`;
-  $("dlgConta").showModal();
-};
-$("dlgConta").onclose = () => { if ($("dlgConta").returnValue === "sair") sairDaConta(); };
-
-// ---------------------------------------------------------------- servidores
-function ouvirServidores() {
-  S.unsubSrvs?.();
-  const q = query(collection(db, "servidores"), where("membros", "array-contains", S.user.uid));
-  S.unsubSrvs = onSnapshot(q, snap => {
-    S.servidores.clear();
-    snap.forEach(d => S.servidores.set(d.id, d.data()));
-    let ultimo = null; try { ultimo = localStorage.getItem("telao-ultimo"); } catch {}
-    if (S.atual && !S.servidores.has(S.atual)) { if (S.call === S.atual) sairDaCall(); abrirServidor(null); }
-    else if (!S.atual && ultimo && S.servidores.has(ultimo)) abrirServidor(ultimo);
-    renderTrilho(); renderLateral();
-  }, e => aviso("Erro ao carregar servidores: " + e.code));
-}
-
-function renderTrilho() {
-  const box = $("listaSrv"); box.innerHTML = "";
-  const lista = [...S.servidores].sort((a, b) => (a[1].criadoEm || 0) - (b[1].criadoEm || 0));
-  for (const [id, s] of lista) {
-    const el = document.createElement("div");
-    el.className = "srv" + (id === S.atual ? " atual" : "") + (id === S.call ? " call" : "");
-    el.style.background = cor(s.nome);
-    el.textContent = iniciais(s.nome);
-    el.title = s.nome;
-    el.onclick = () => abrirServidor(id);
-    box.appendChild(el);
-  }
-}
-
-async function salvarServidor(modo, nome) {
-  nome = String(nome || "").trim().slice(0, 40);
-  if (!nome) return;
-  try {
-    if (modo === "renomear") {
-      await updateDoc(srvDoc(S.atual), { nome });
-    } else {
-      const ref = await addDoc(collection(db, "servidores"), { nome, dono: S.user.uid, membros: [S.user.uid], criadoEm: Date.now() });
-      abrirServidor(ref.id);
-      aviso("Servidor criado! Copie o convite pra chamar os amigos.");
-    }
-  } catch (e) { aviso("Não deu: " + (e.code || e.message)); }
-}
-$("btNovoSrv").onclick = () => {
-  if (!TEM_DIALOG) return salvarServidor("criar", prompt("Nome do servidor:"));
-  $("dlgTitulo").textContent = "Criar servidor";
-  $("inNomeSrv").value = ""; $("dlgSrv").dataset.modo = "criar";
-  $("dlgSrv").showModal();
-};
-$("btRenomear").onclick = () => {
-  if (!TEM_DIALOG) return salvarServidor("renomear", prompt("Novo nome:", S.servidores.get(S.atual)?.nome || ""));
-  $("dlgTitulo").textContent = "Renomear servidor";
-  $("inNomeSrv").value = S.servidores.get(S.atual)?.nome || ""; $("dlgSrv").dataset.modo = "renomear";
-  $("dlgSrv").showModal();
-};
-$("dlgSrv").onclose = () => {
-  if ($("dlgSrv").returnValue === "ok") salvarServidor($("dlgSrv").dataset.modo, $("inNomeSrv").value);
-};
-
-$("btConvite").onclick = async () => {
-  const link = location.href.split("#")[0] + "#convite-" + S.atual;
-  try { await navigator.clipboard.writeText(link); aviso("Convite copiado!"); }
-  catch { prompt("Copie o convite:", link); }
-};
-
-async function tratarConvite() {
-  const m = location.hash.match(/^#convite-([A-Za-z0-9]{10,40})$/);
-  if (!m) return;
-  history.replaceState(null, "", location.pathname + location.search);
-  try {
-    await updateDoc(srvDoc(m[1]), { membros: arrayUnion(S.user.uid) });
-    abrirServidor(m[1]);
-    aviso("Você entrou no servidor!");
-  } catch (e) {
-    aviso(e.code === "not-found" ? "Esse convite não existe mais." : "Não deu pra entrar: " + (e.code || e.message));
-  }
-}
-
-$("btSairSrv").onclick = async () => {
-  if (!confirm("Sair deste servidor?")) return;
-  const sid = S.atual;
-  if (S.call === sid) await sairDaCall();
-  await updateDoc(srvDoc(sid), { membros: arrayRemove(S.user.uid) }).catch(e => aviso("Erro: " + e.code));
-};
-$("btExcluirSrv").onclick = async () => {
-  if (!confirm("Excluir o servidor para todo mundo? Isso não tem volta.")) return;
-  const sid = S.atual;
-  if (S.call === sid) await sairDaCall();
-  await deleteDoc(srvDoc(sid)).catch(e => aviso("Erro: " + e.code));
-};
-
-function abrirServidor(sid) {
-  if (sid === S.atual) return;
-  if (S.call && S.call !== sid) { sairDaCall(); aviso("Você saiu da call do outro servidor."); }
-  S.atual = sid;
-  S.unsubChat?.(); S.unsubPessoas?.(); S.unsubChat = S.unsubPessoas = null;
-  S.pessoas.clear();
-  $("msgs").innerHTML = "";
-  if (sid) {
-    try { localStorage.setItem("telao-ultimo", sid); } catch {}
-    ouvirChat(sid); ouvirPessoas(sid);
-    if (ehCelular() && S.user) irPara(S.call === sid ? "call" : "chat");
-  }
-  naoLidas = 0; $("badgeChat").hidden = true;
-  renderTudo();
-}
-
-function renderLateral() {
-  const s = S.servidores.get(S.atual);
-  const dono = s && s.dono === S.user?.uid;
-  $("nomeSrv").textContent = s ? s.nome : "Nenhum servidor";
-  $("tituloChat").textContent = s ? "# chat" : "Chat";
-  $("btConvite").hidden = !s;
-  $("btCall").disabled = !s;
-  $("btCall").textContent = S.call && S.call === S.atual ? "Você está na call" : "Entrar na call";
-  $("btCall").classList.toggle("ativo", !!(S.call && S.call === S.atual));
-  $("btRenomear").hidden = !dono;
-  $("btExcluirSrv").hidden = !dono;
-  $("btSairSrv").hidden = !s || dono;
-  $("inMsg").disabled = $("btEnviar").disabled = !s;
-  $("controles").hidden = !S.call;
-}
-
-function renderTudo() { renderTrilho(); renderLateral(); renderPessoas(); renderPalco(); }
-
-// ---------------------------------------------------------------- chat
-function ouvirChat(sid) {
-  const q = query(srvCol(sid, "mensagens"), orderBy("ts"), limitToLast(200));
-  let primeira = true;
-  S.unsubChat = onSnapshot(q, snap => {
-    if (sid !== S.atual) return;
-    const novas = snap.docChanges().filter(c => c.type === "added" && c.doc.data().uid !== S.user.uid).length;
-    if (!primeira && novas && ehCelular() && $("app").dataset.aba !== "chat") {
-      naoLidas += novas; $("badgeChat").textContent = naoLidas > 99 ? "99+" : naoLidas; $("badgeChat").hidden = false;
-    }
-    primeira = false;
-    const box = $("msgs");
-    const noFim = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-    box.innerHTML = "";
-    snap.forEach(d => {
-      const m = d.data();
-      const div = document.createElement("div"); div.className = "msg";
-      div.innerHTML = `${avatarHTML(m.nome, m.foto)}<div><div class="quem" style="color:${cor(m.nome)}">${esc(m.nome)}<span class="hora">${hora(m.ts)}</span></div><div class="txt">${esc(m.texto)}</div></div>`;
-      box.appendChild(div);
-    });
-    if (noFim) box.scrollTop = box.scrollHeight;
-  }, e => aviso("Erro no chat: " + e.code));
-}
-
-$("formChat").onsubmit = async e => {
-  e.preventDefault();
-  const texto = $("inMsg").value.trim();
-  if (!texto || !S.atual) return;
-  $("inMsg").value = "";
-  await addDoc(srvCol(S.atual, "mensagens"), { uid: S.user.uid, nome: S.nome, foto: S.foto, texto: texto.slice(0, 500), ts: Date.now() })
-    .catch(() => aviso("Mensagem não enviada."));
-};
-
-// ---------------------------------------------------------------- presença na call
-function ouvirPessoas(sid) {
-  S.unsubPessoas = onSnapshot(srvCol(sid, "pessoas"), snap => {
-    if (sid !== S.atual) return;
-    const agora = Date.now();
-    S.pessoas.clear();
-    snap.forEach(d => { const p = d.data(); if (agora - p.visto < 35_000) S.pessoas.set(d.id, p); });
-
-    if (S.call === sid) {
-      for (const [uid, par] of S.pares) {
-        const p = S.pessoas.get(uid);
-        if (!p || p.sessao !== par.sessao) fecharPar(uid);
-      }
-      for (const [uid, p] of S.pessoas) {
-        if (uid === S.user.uid || S.pares.has(uid)) continue;
-        if (S.user.uid < uid) iniciarOferta(uid, p.sessao); // quem tem o uid "menor" chama
-      }
-    }
-    renderPessoas(); renderPalco();
-  });
-}
-
-function renderPessoas() {
-  const ul = $("pessoas"); ul.innerHTML = "";
-  if (!S.atual) return;
-  if (!S.pessoas.size) { ul.innerHTML = `<li style="color:var(--txt2)">Ninguém na call</li>`; return; }
-  for (const [uid, p] of S.pessoas) {
-    const li = document.createElement("li");
-    li.innerHTML = `${avatarHTML(p.nome, p.foto, "av-" + uid)}<span>${esc(p.nome)}${uid === S.user.uid ? " (você)" : ""}</span>
-      ${p.tela ? '<span class="tag live">AO VIVO</span>' : `<span class="tag">${p.cam ? "📷 " : ""}${p.mic ? "🎤" : "🔇"}</span>`}`;
-    ul.appendChild(li);
-  }
-}
-
-$("btCall").onclick = () => { if (S.call !== S.atual) entrarNaCall(); };
-$("btDesligar").onclick = () => sairDaCall();
-
-async function entrarNaCall() {
-  const sid = S.atual; if (!sid) return;
-  if (!TEM_WEBRTC) return aviso("Este navegador não faz chamadas. Use Chrome, Edge, Firefox ou Safari atualizados.");
-  if (S.call) await sairDaCall();
-  try {
-    S.mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
-    detectarFala(S.user.uid, S.mic);
-  } catch { S.mic = null; aviso("Sem microfone: você entra só ouvindo."); }
-  S.call = sid; S.sessao = gerar() + gerar(); S.entrouEm = Date.now();
-  await setDoc(srvDoc(sid, "pessoas", S.user.uid), {
-    nome: S.nome, foto: S.foto, sessao: S.sessao, mic: !!S.mic, tela: false, cam: false, visto: Date.now()
-  });
-  S.batida = setInterval(() => updateDoc(srvDoc(sid, "pessoas", S.user.uid), { visto: Date.now() }).catch(() => {}), 10_000);
-  ouvirSinais(sid);
-  atualizarBotaoMic();
-  manterTelaAcesa();
-  destravarAudio();
-  if (ehCelular()) irPara("call");
-  renderTudo();
-}
-
-async function sairDaCall() {
-  const sid = S.call; if (!sid) return;
-  pararTela(true); desligarCam(true);
-  S.mic?.getTracks().forEach(t => t.stop()); S.mic = null;
-  for (const uid of [...S.pares.keys()]) fecharPar(uid);
-  S.unsubSinais?.(); S.unsubSinais = null;
-  clearInterval(S.batida);
-  soltarTela();
-  S.call = null;
-  await deleteDoc(srvDoc(sid, "pessoas", S.user.uid)).catch(() => {});
-  renderTudo();
-}
-window.addEventListener("pagehide", () => { if (S.call) deleteDoc(srvDoc(S.call, "pessoas", S.user.uid)).catch(() => {}); });
-
-// ---------------------------------------------------------------- sinalização
-async function enviarSinal(para, paraSessao, tipo, dados) {
-  await addDoc(srvCol(S.call, "sinais"), { de: S.user.uid, deSessao: S.sessao, para, paraSessao, tipo, dados: JSON.stringify(dados), ts: Date.now() });
-}
-
-function ouvirSinais(sid) {
-  const q = query(srvCol(sid, "sinais"), where("para", "==", S.user.uid));
-  S.unsubSinais = onSnapshot(q, snap => {
-    const novos = snap.docChanges().filter(c => c.type === "added").map(c => ({ id: c.doc.id, ...c.doc.data() })).sort((a, b) => a.ts - b.ts);
-    for (const s of novos) {
-      deleteDoc(srvDoc(sid, "sinais", s.id)).catch(() => {});
-      if (S.call !== sid || s.paraSessao !== S.sessao || s.ts < S.entrouEm - 5000) continue;
-      tratarSinal(s).catch(e => console.warn("sinal", e));
-    }
-  });
-}
-
-async function tratarSinal(s) {
-  const dados = JSON.parse(s.dados);
-  if (s.tipo === "oferta") {
-    if (S.pares.has(s.de)) fecharPar(s.de);
-    const par = criarPar(s.de, s.deSessao);
-    await par.pc.setRemoteDescription(dados);
-    par.pc.getTransceivers().forEach(t => (t.direction = "sendrecv"));
-    aplicarFaixas(par);
-    const resp = await par.pc.createAnswer();
-    await par.pc.setLocalDescription(resp);
-    await enviarSinal(s.de, s.deSessao, "resposta", { type: resp.type, sdp: resp.sdp });
-    descarregarIce(par);
-    return;
-  }
-  const par = S.pares.get(s.de);
-  if (!par || par.sessao !== s.deSessao) return;
-  if (s.tipo === "resposta") { await par.pc.setRemoteDescription(dados); descarregarIce(par); }
-  if (s.tipo === "ice") {
-    if (par.pc.remoteDescription) await par.pc.addIceCandidate(dados).catch(() => {});
-    else par.filaIce.push(dados);
-  }
-}
-function descarregarIce(par) { for (const c of par.filaIce.splice(0)) par.pc.addIceCandidate(c).catch(() => {}); }
-
-// ---------------------------------------------------------------- WebRTC
-function criarPar(uid, sessao) {
-  const pc = new RTCPeerConnection(ICE);
-  const par = { pc, sessao, filaIce: [], audio: new MediaStream(), video: new MediaStream(), cam: new MediaStream(), el: null };
-  par.el = document.createElement("audio"); par.el.autoplay = true; par.el.setAttribute("playsinline", "");
-  par.el.srcObject = par.audio; par.el.muted = S.surdo; $("audios").appendChild(par.el);
-  pc.onicecandidate = e => { if (e.candidate) enviarSinal(uid, sessao, "ice", e.candidate.toJSON()); };
-  pc.ontrack = e => {
-    const i = pc.getTransceivers().indexOf(e.transceiver);
-    if (i === TX.VIDEO) { par.video.getTracks().forEach(t => par.video.removeTrack(t)); par.video.addTrack(e.track); }
-    else if (i === TX.CAM) { par.cam.getTracks().forEach(t => par.cam.removeTrack(t)); par.cam.addTrack(e.track); }
-    else { par.audio.addTrack(e.track); par.el.play().catch(() => {}); if (i === TX.MIC) detectarFala(uid, new MediaStream([e.track])); }
-    renderPalco();
-  };
-  pc.onconnectionstatechange = () => {
-    if (pc.connectionState === "failed") pc.restartIce?.();
-    if (pc.connectionState === "connected") { ajustarQualidadeEnvio(par); limitarCam(par); }
-  };
-  S.pares.set(uid, par);
-  return par;
-}
-
-async function iniciarOferta(uid, sessao) {
-  const par = criarPar(uid, sessao);
-  // 4 canais fixos: microfone, vídeo da tela, som da tela, câmera.
-  // Como já existem desde o começo, ligar/desligar qualquer um não precisa renegociar.
-  par.pc.addTransceiver("audio", { direction: "sendrecv" });
-  par.pc.addTransceiver("video", { direction: "sendrecv" });
-  par.pc.addTransceiver("audio", { direction: "sendrecv" });
-  par.pc.addTransceiver("video", { direction: "sendrecv" });
-  aplicarFaixas(par);
-  const oferta = await par.pc.createOffer();
-  await par.pc.setLocalDescription(oferta);
-  await enviarSinal(uid, sessao, "oferta", { type: oferta.type, sdp: oferta.sdp });
-}
-
-function aplicarFaixas(par) {
-  const tx = par.pc.getTransceivers();
-  if (tx.length < 4) return;
-  tx[TX.MIC].sender.replaceTrack(S.mic?.getAudioTracks()[0] || null).catch(() => {});
-  tx[TX.VIDEO].sender.replaceTrack(S.tela?.getVideoTracks()[0] || null).then(() => ajustarQualidadeEnvio(par)).catch(() => {});
-  tx[TX.SOM_TELA].sender.replaceTrack(S.tela?.getAudioTracks()[0] || null).catch(() => {});
-  tx[TX.CAM].sender.replaceTrack(S.cam?.getVideoTracks()[0] || null).then(() => limitarCam(par)).catch(() => {});
-}
-const atualizarTodos = () => { for (const par of S.pares.values()) aplicarFaixas(par); };
-
-async function ajustarQualidadeEnvio(par) {
-  const sender = par.pc.getTransceivers()[TX.VIDEO]?.sender;
-  if (!sender) return;
-  const q = QUALIDADES[$("selQualidade").value];
-  const p = sender.getParameters();
-  if (!p.encodings || !p.encodings.length) p.encodings = [{}];
-  p.encodings[0].maxBitrate = q.bitrate;
-  p.encodings[0].maxFramerate = q.frameRate;
-  p.degradationPreference = q.frameRate >= 60 ? "maintain-framerate" : "maintain-resolution";
-  await sender.setParameters(p).catch(() => {});
-}
-async function limitarCam(par) {
-  const sender = par.pc.getTransceivers()[TX.CAM]?.sender;
-  if (!sender) return;
-  const p = sender.getParameters();
-  if (!p.encodings || !p.encodings.length) p.encodings = [{}];
-  p.encodings[0].maxBitrate = 1_000_000;
-  await sender.setParameters(p).catch(() => {});
-}
-
-function fecharPar(uid) {
-  const par = S.pares.get(uid); if (!par) return;
-  par.pc.close(); par.el.srcObject = null; par.el.remove();
-  S.pares.delete(uid);
-}
-
-const meuDoc = () => srvDoc(S.call, "pessoas", S.user.uid);
-
-// ---------------------------------------------------------------- microfone
-function atualizarBotaoMic() {
-  const t = S.mic?.getAudioTracks()[0];
-  const ligado = !!t && t.enabled;
-  rotulo("btMic", !t ? "Ligar mic" : ligado ? "Microfone" : "Mudo");
-  $("btMic").classList.toggle("mudo", !ligado);
-}
-$("btMic").onclick = async () => {
-  if (!S.call) return;
-  if (!S.mic) {
-    try { S.mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); detectarFala(S.user.uid, S.mic); }
-    catch { return aviso("Não deu acesso ao microfone."); }
-    atualizarTodos();
-  } else {
-    const t = S.mic.getAudioTracks()[0]; t.enabled = !t.enabled;
-  }
-  atualizarBotaoMic();
-  updateDoc(meuDoc(), { mic: S.mic.getAudioTracks()[0].enabled }).catch(() => {});
-};
-
-// ---------------------------------------------------------------- câmera
-$("btCam").onclick = async () => {
-  if (!S.call) return;
-  if (S.cam) return desligarCam();
-  try { S.cam = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } } }); }
-  catch { return aviso("Não deu acesso à câmera."); }
-  S.cam.getVideoTracks()[0].onended = () => desligarCam();
-  rotulo("btCam", "Câmera"); $("btCam").classList.add("ativo");
-  updateDoc(meuDoc(), { cam: true }).catch(() => {});
-  atualizarTodos(); renderPalco();
-};
-function desligarCam(silencioso) {
-  if (!S.cam) return;
-  S.cam.getTracks().forEach(t => t.stop()); S.cam = null;
-  rotulo("btCam", "Câmera"); $("btCam").classList.remove("ativo");
-  if (S.call && !silencioso) updateDoc(meuDoc(), { cam: false }).catch(() => {});
-  atualizarTodos(); renderPalco();
-}
-
-// ---------------------------------------------------------------- ensurdecer
-$("btSurdo").onclick = () => {
-  S.surdo = !S.surdo;
-  for (const par of S.pares.values()) par.el.muted = S.surdo;
-  rotulo("btSurdo", S.surdo ? "Ensurdecido" : "Áudio");
-  $("btSurdo").classList.toggle("mudo", S.surdo);
-};
-
-// ---------------------------------------------------------------- compartilhar tela
-$("btTela").onclick = () => (S.tela ? pararTela() : iniciarTela());
-
-async function iniciarTela() {
-  if (!S.call) return;
-  if (!navigator.mediaDevices?.getDisplayMedia) return aviso("Seu navegador não compartilha tela (use Chrome/Edge no PC).");
-  const q = QUALIDADES[$("selQualidade").value];
-  try {
-    S.tela = await navigator.mediaDevices.getDisplayMedia({
-      video: { width: { ideal: q.width }, height: { ideal: q.height }, frameRate: { ideal: q.frameRate } },
-      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
-      systemAudio: "include",
-    });
-  } catch { return; }
-  const v = S.tela.getVideoTracks()[0];
-  v.contentHint = q.frameRate >= 60 ? "motion" : "detail";
-  v.onended = () => pararTela();
-  atualizarTodos();
-  rotulo("btTela", "Parar live"); $("btTela").classList.add("ativo");
-  updateDoc(meuDoc(), { tela: true }).catch(() => {});
-  renderPalco();
-}
-function pararTela(silencioso) {
-  if (!S.tela) return;
-  S.tela.getTracks().forEach(t => t.stop()); S.tela = null;
-  atualizarTodos();
-  rotulo("btTela", "Transmitir"); $("btTela").classList.remove("ativo");
-  if (S.call && !silencioso) updateDoc(meuDoc(), { tela: false }).catch(() => {});
-  renderPalco();
-}
-$("selQualidade").onchange = async () => {
-  for (const par of S.pares.values()) ajustarQualidadeEnvio(par);
-  const v = S.tela?.getVideoTracks()[0];
-  if (v) {
-    const q = QUALIDADES[$("selQualidade").value];
-    await v.applyConstraints({ width: { ideal: q.width }, height: { ideal: q.height }, frameRate: { ideal: q.frameRate } }).catch(() => {});
-    v.contentHint = q.frameRate >= 60 ? "motion" : "detail";
-  }
-};
-
-// ---------------------------------------------------------------- palco
-const volumes = new Map();
-const LOGO = document.querySelector(".logo-svg").outerHTML.replace('id="lg"', 'id="lg2"').replace("url(#lg)", "url(#lg2)");
-function renderPalco() {
-  const palco = $("palco");
-  if (!S.atual) {
-    palco.dataset.chave = "";
-    palco.innerHTML = `<div class="vazio">${LOGO}<h2>${S.servidores.size ? "Escolha um servidor" : "Bem-vindo ao Telão"}</h2><p>${S.servidores.size ? "Seus servidores ficam na barra da esquerda." : "Clique no <b>+</b> pra criar seu primeiro servidor, ou abra um convite de um amigo."}</p></div>`;
-    return;
-  }
-  const naCall = S.call === S.atual;
-  const meuUid = S.user.uid;
-  const streamDe = (uid, tipo) => uid === meuUid ? (tipo === "tela" ? S.tela : S.cam) : S.pares.get(uid)?.[tipo === "tela" ? "video" : "cam"];
-
-  const telas = [];
-  if (naCall) for (const [uid, p] of S.pessoas) if (p.tela && streamDe(uid, "tela")) telas.push({ uid, p, stream: streamDe(uid, "tela") });
-
-  const chave = naCall + "|" + telas.map(t => t.uid + t.stream.id + t.stream.getTracks().length).join(",") + "|" +
-    [...S.pessoas].map(([uid, p]) => uid + (p.mic ? "m" : "") + (p.cam ? "c" + (streamDe(uid, "cam")?.getTracks().length || 0) : "")).join(",");
-  if (palco.dataset.chave === chave) return;
-  palco.dataset.chave = chave;
-  palco.innerHTML = "";
-
-  if (!naCall) {
-    palco.innerHTML = `<div class="vazio">${LOGO}<h2>${S.pessoas.size ? `${S.pessoas.size} ${S.pessoas.size > 1 ? "pessoas" : "pessoa"} na call` : "A call está vazia"}</h2><p>Entre na call pra conversar e ver as telas${PODE_TRANSMITIR ? " — ou transmitir a sua" : ". (Transmitir a tela só dá pelo computador.)"}.</p><button class="prim" onclick="document.getElementById('btCall').click()">Entrar na call</button></div>`;
-    return;
-  }
-
-  for (const t of telas) {
-    const meu = t.uid === meuUid;
-    const div = document.createElement("div"); div.className = "tile tela";
-    const video = document.createElement("video");
-    video.autoplay = true; video.playsInline = true; video.setAttribute("playsinline", ""); video.muted = true; video.srcObject = t.stream;
-    video.ondblclick = () => telaCheia(div);
-    div.appendChild(video);
-    div.insertAdjacentHTML("beforeend", `<div class="nome"><span class="ponto"></span>${esc(t.p.nome)}${meu ? " (sua tela)" : ""}</div>`);
-    const acoes = document.createElement("div"); acoes.className = "acoes";
-    if (!meu) {
-      const vol = document.createElement("input"); vol.type = "range"; vol.min = 0; vol.max = 1; vol.step = .05; vol.title = "Volume";
-      vol.value = volumes.get(t.uid) ?? 1;
-      vol.oninput = () => { volumes.set(t.uid, +vol.value); const par = S.pares.get(t.uid); if (par) par.el.volume = +vol.value; };
-      acoes.appendChild(vol);
-    }
-    const cheia = document.createElement("button"); cheia.textContent = "Tela cheia"; cheia.onclick = () => telaCheia(div);
-    acoes.appendChild(cheia); div.appendChild(acoes);
-    palco.appendChild(div);
-  }
-  const grade = document.createElement("div"); grade.className = "grade"; palco.appendChild(grade);
-  for (const [uid, p] of S.pessoas) {
-    const meu = uid === meuUid;
-    const div = document.createElement("div"); div.className = "tile"; div.id = "tile-" + uid;
-    const camStream = p.cam ? streamDe(uid, "cam") : null;
-    const rotulo = `<div class="nome">${p.mic ? "" : "🔇 "}${esc(p.nome)}${meu ? " (você)" : ""}</div>`;
-    if (camStream) {
-      const v = document.createElement("video");
-      v.autoplay = true; v.playsInline = true; v.setAttribute("playsinline", ""); v.muted = true; v.srcObject = camStream;
-      if (meu) v.className = "espelho";
-      v.ondblclick = () => telaCheia(div);
-      div.appendChild(v); div.insertAdjacentHTML("beforeend", rotulo);
-    } else {
-      div.innerHTML = avatarHTML(p.nome, p.foto, "tav-" + uid) + rotulo;
-    }
-    grade.appendChild(div);
-  }
-}
-
-// ---------------------------------------------------------------- indicador de fala
-function detectarFala(uid, stream) {
-  try {
-    ctxAudio ??= new AudioContext();
-    ctxAudio.resume?.();
-    const an = ctxAudio.createAnalyser(); an.fftSize = 512;
-    ctxAudio.createMediaStreamSource(stream).connect(an);
-    const buf = new Uint8Array(an.frequencyBinCount);
-    const loop = () => {
-      if (!S.call || stream.getTracks().every(t => t.readyState === "ended")) return;
-      an.getByteFrequencyData(buf);
-      const fala = buf.reduce((a, b) => a + b, 0) / buf.length > 18;
-      document.getElementById("av-" + uid)?.classList.toggle("falando", fala);
-      document.getElementById("tav-" + uid)?.classList.toggle("falando", fala);
-      document.getElementById("tile-" + uid)?.classList.toggle("falando-tile", fala);
-      requestAnimationFrame(loop);
-    };
-    loop();
-  } catch {}
-}
-</script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
