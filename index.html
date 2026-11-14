@@ -4,101 +4,140 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Telão</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ffa53d%22/%3E%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ff5a00%22/%3E%20%3C/linearGradient%3E%20%3C/defs%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22url%28%23g%29%22/%3E%20%3Crect%20x%3D%2211%22%20y%3D%2214%22%20width%3D%2242%22%20height%3D%2228%22%20rx%3D%226%22%20fill%3D%22%231f0e00%22/%3E%20%3Crect%20x%3D%2228.5%22%20y%3D%2242%22%20width%3D%227%22%20height%3D%225%22%20fill%3D%22%231f0e00%22/%3E%20%3Crect%20x%3D%2221%22%20y%3D%2247%22%20width%3D%2222%22%20height%3D%224.5%22%20rx%3D%222.25%22%20fill%3D%22%231f0e00%22/%3E%20%3Ccircle%20cx%3D%2232%22%20cy%3D%2228%22%20r%3D%224.2%22%20fill%3D%22%23ff8a2a%22/%3E%20%3Cpath%20d%3D%22M24.6%2020.6a10.5%2010.5%200%200%200%200%2014.8M39.4%2020.6a10.5%2010.5%200%200%201%200%2014.8%22%20stroke%3D%22%23ff8a2a%22%20stroke-width%3D%223%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22/%3E%20%3C/svg%3E">
+<meta name="theme-color" content="#ff7a1a">
 <style>
   :root{
-    --bg:#0d0b09; --bg2:#15120f; --bg3:#201b16; --bg4:#2a231c; --line:#352b21;
-    --txt:#ececf1; --txt2:#9a9aab; --lar:#ff7a1a; --lar2:#ff9a3d; --lartxt:#1f0e00; --verm:#e0344a; --verde:#2fbf71;
+    --bg:#0e0c0a; --bg2:#151210; --bg3:#1e1a16; --bg4:#29231d; --line:#2c251f;
+    --txt:#f3eee9; --txt2:#a39a90; --lar:#ff7a1a; --lartxt:#1f0e00; --verm:#ef4444; --verde:#22c55e;
+    --raio:14px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-  button{font:inherit;cursor:pointer;border:none;border-radius:8px;padding:.6rem 1rem;background:var(--bg3);color:var(--txt)}
-  button:hover{filter:brightness(1.2)}
-  button:disabled{opacity:.5;cursor:default}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  button{font:inherit;cursor:pointer;border:none;border-radius:10px;padding:.6rem 1rem;background:var(--bg3);color:var(--txt);transition:background .15s,transform .1s}
+  button:hover{background:var(--bg4)}
+  button:active{transform:scale(.97)}
+  button:disabled{opacity:.45;cursor:default}
   button.prim{background:var(--lar);color:var(--lartxt);font-weight:700}
-  button.perigo{background:var(--verm);color:#fff}
-  button.ativo{background:var(--verde);color:#06240f}
-  input,select{font:inherit;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.6rem .8rem}
-  input:focus,select:focus{outline:2px solid var(--lar)}
+  button.prim:hover{background:#ff8f3f}
+  button.ativo{background:var(--verde);color:#052e14}
+  button.texto{background:none;color:var(--txt2);padding:.35rem .5rem;font-size:.85rem;text-align:left}
+  button.texto:hover{color:var(--txt)}
+  button.texto.perigo{color:var(--verm)}
+  input,select{font:inherit;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.65rem .85rem}
+  input:focus,select:focus{outline:2px solid var(--lar);outline-offset:-1px}
   [hidden]{display:none!important}
+  svg{display:block}
+  ::-webkit-scrollbar{width:8px} ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:8px}
 
   /* ---------- Login ---------- */
-  #login{min-height:100%;display:grid;place-items:center;padding:1rem}
-  .cartao{width:min(420px,100%);background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:2rem;display:flex;flex-direction:column;gap:1rem;text-align:center}
-  .logo{font-size:2.2rem;font-weight:800}
-  .logo span{color:var(--lar)}
-  .sub{color:var(--txt2)}
-  #btGoogle{display:flex;align-items:center;justify-content:center;gap:.6rem;background:#fff;color:#1f1f1f;font-weight:600}
-  .erro{color:var(--verm);font-size:.9rem;min-height:1.2em}
+  #login{min-height:100%;display:grid;place-items:center;padding:1.5rem;background:radial-gradient(60% 50% at 50% 0%,#ff7a1a22,transparent)}
+  .cartao{width:min(380px,100%);display:flex;flex-direction:column;align-items:center;gap:1.1rem;text-align:center}
+  .cartao .logo-svg{width:88px;height:88px;filter:drop-shadow(0 10px 30px #ff7a1a55)}
+  .marca{font-size:2.4rem;font-weight:800;letter-spacing:-.02em;margin:0}
+  .marca span{color:var(--lar)}
+  .sub{color:var(--txt2);margin:0;line-height:1.5}
+  #btGoogle{display:flex;align-items:center;justify-content:center;gap:.7rem;width:100%;background:#fff;color:#1f1f1f;font-weight:600;padding:.8rem;margin-top:.4rem}
+  #btGoogle:hover{background:#f1f1f1}
+  .erro{color:var(--verm);font-size:.88rem;min-height:1.2em;line-height:1.4}
 
   /* ---------- App ---------- */
-  #app{height:100%;display:grid;grid-template-columns:72px 230px 1fr 320px;grid-template-rows:1fr auto}
-  #trilho{grid-row:1/3;background:#090706;display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:.7rem 0;overflow:auto}
-  .srv{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;cursor:pointer;flex:none;transition:border-radius .15s;position:relative;user-select:none}
+  #app{height:100%;display:grid;grid-template-columns:72px 240px 1fr 320px;grid-template-rows:1fr auto}
+
+  #trilho{grid-row:1/3;background:#090807;display:flex;flex-direction:column;align-items:center;gap:.55rem;padding:.8rem 0;overflow:auto}
+  #trilho > .logo-svg{width:44px;height:44px;flex:none}
+  .sep{width:30px;height:2px;border-radius:2px;background:var(--line);flex:none}
+  #listaSrv{display:flex;flex-direction:column;align-items:center;gap:.55rem}
+  .srv{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.95rem;color:#fff;cursor:pointer;flex:none;transition:border-radius .2s;position:relative;user-select:none}
   .srv:hover,.srv.atual{border-radius:14px}
-  .srv.atual::before{content:"";position:absolute;left:-12px;width:5px;height:36px;border-radius:0 4px 4px 0;background:var(--lar)}
-  .srv.call::after{content:"🔊";position:absolute;right:-4px;bottom:-4px;font-size:.8rem}
+  .srv.atual::before{content:"";position:absolute;left:-13px;width:4px;height:30px;border-radius:0 4px 4px 0;background:var(--lar)}
+  .srv.call::after{content:"";position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:var(--verde);border:3px solid #090807}
   .srv.mais{background:var(--bg3);color:var(--lar);font-size:1.6rem;font-weight:400}
-  .sep{width:32px;height:2px;background:var(--line);flex:none}
-  #eu{margin-top:auto;width:48px;height:48px;border-radius:50%;object-fit:cover;cursor:pointer;flex:none;background:var(--bg3)}
+  .srv.mais:hover{background:var(--lar);color:var(--lartxt)}
+  #eu{margin-top:auto;color:transparent;font-size:0;width:42px;height:42px;border-radius:50%;object-fit:cover;cursor:pointer;flex:none;background:var(--bg3);outline:2px solid transparent;transition:outline-color .15s}
+  #eu:hover{outline-color:var(--lar)}
 
-  #lateral{grid-row:1/3;background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-  #lateral .topo{padding:1rem;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.5rem}
-  #nomeSrv{font-weight:700;font-size:1.1rem;word-break:break-word}
-  #lateral .topo button{font-size:.85rem;padding:.45rem .7rem}
-  #lateral h4{margin:1rem 1rem .4rem;color:var(--txt2);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
-  #btCall{margin:0 .8rem}
-  #pessoas{list-style:none;margin:.4rem 0 0;padding:0 .5rem;overflow:auto}
-  #pessoas li{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;border-radius:6px;font-size:.92rem}
-  .av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.8rem;flex:none;color:#fff;object-fit:cover;background-size:cover;background-position:center}
-  .falando{box-shadow:0 0 0 2px var(--verde)}
-  .tag{margin-left:auto;font-size:.7rem;color:var(--txt2)}
-  .tag.live{color:#fff;background:var(--verm);padding:.1rem .35rem;border-radius:4px;font-weight:700}
-  #lateral .rodape{margin-top:auto;padding:.8rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.4rem}
-  #lateral .rodape button{font-size:.8rem;padding:.4rem}
+  #lateral{grid-row:1/3;background:var(--bg2);display:flex;flex-direction:column;min-height:0}
+  #lateral .topo{height:56px;padding:0 .6rem 0 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.4rem}
+  #nomeSrv{flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .icone{width:34px;height:34px;padding:7px;border-radius:8px;background:none;color:var(--txt2)}
+  .icone:hover{background:var(--bg3);color:var(--txt)}
+  .icone svg,.ctl svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .secao{padding:1rem 1rem .4rem;color:var(--txt2);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+  #btCall{margin:0 .8rem .4rem}
+  #pessoas{list-style:none;margin:0;padding:0 .5rem;overflow:auto}
+  #pessoas li{display:flex;align-items:center;gap:.6rem;padding:.4rem .5rem;border-radius:8px;font-size:.92rem}
+  #pessoas li:hover{background:var(--bg3)}
+  #pessoas li.nada{color:var(--txt2);font-size:.85rem}
+  .av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.78rem;flex:none;color:#fff;background-size:cover;background-position:center;transition:box-shadow .1s}
+  .falando{box-shadow:0 0 0 2px var(--bg2),0 0 0 4px var(--verde)}
+  .tag{margin-left:auto;font-size:.68rem;color:var(--txt2)}
+  .tag.live{color:#fff;background:var(--verm);padding:.12rem .4rem;border-radius:5px;font-weight:800;letter-spacing:.04em}
+  #menuSrv{margin-top:auto;padding:.6rem .5rem;border-top:1px solid var(--line);display:flex;flex-direction:column}
 
-  #palco{min-height:0;overflow:auto;padding:1rem;display:grid;gap:.8rem;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));align-content:start}
-  .tile{position:relative;background:var(--bg3);border:1px solid var(--line);border-radius:12px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}
-  .tile.tela{grid-column:1/-1}
+  #palco{min-height:0;overflow:auto;padding:1.2rem;display:flex;flex-direction:column;gap:.9rem;background:var(--bg)}
+  #palco > *{flex:none}
+  .grade{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  .tile{position:relative;background:var(--bg3);border-radius:var(--raio);overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}
+  .tile.tela{aspect-ratio:auto;height:clamp(240px,58vh,760px);box-shadow:0 0 0 2px var(--lar)}
   .tile video{width:100%;height:100%;object-fit:contain;background:#000}
   .tile video.espelho{transform:scaleX(-1)}
-  .tile.falando-tile{outline:3px solid var(--verde)}
-  .tile .av{width:72px;height:72px;font-size:1.8rem}
-  .tile.tela{border-color:var(--lar)}
-  .tile .nome{position:absolute;left:.5rem;bottom:.5rem;background:#000a;padding:.2rem .5rem;border-radius:6px;font-size:.85rem}
-  .tile .acoes{position:absolute;right:.5rem;bottom:.5rem;display:flex;gap:.4rem;align-items:center;background:#000a;padding:.25rem .4rem;border-radius:6px}
-  .tile .acoes button{padding:.2rem .5rem;font-size:.8rem}
-  .tile .acoes input[type=range]{width:80px;padding:0}
-  .vazio{color:var(--txt2);text-align:center;grid-column:1/-1;padding:3rem 1rem;line-height:1.6}
+  .tile.falando-tile{box-shadow:0 0 0 3px var(--verde)}
+  .tile .av{width:68px;height:68px;font-size:1.6rem}
+  .tile .nome{position:absolute;left:.6rem;bottom:.6rem;background:#000b;padding:.25rem .6rem;border-radius:8px;font-size:.82rem;display:flex;align-items:center;gap:.4rem}
+  .ponto{width:8px;height:8px;border-radius:50%;background:var(--verm);box-shadow:0 0 8px var(--verm)}
+  .tile .acoes{position:absolute;right:.6rem;bottom:.6rem;display:flex;gap:.5rem;align-items:center;background:#000b;padding:.3rem .5rem;border-radius:8px;opacity:0;transition:opacity .15s}
+  .tile:hover .acoes{opacity:1}
+  .tile .acoes button{padding:.25rem .6rem;font-size:.8rem}
+  .tile .acoes input[type=range]{width:90px;padding:0;accent-color:var(--lar)}
+  .vazio{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.6rem;padding:4rem 1rem;color:var(--txt2)}
+  .vazio .logo-svg{width:64px;height:64px;opacity:.9}
+  .vazio h2{margin:.4rem 0 0;color:var(--txt);font-size:1.25rem}
+  .vazio p{margin:0;max-width:340px;line-height:1.5}
+  .vazio button{margin-top:.6rem}
 
-  #chat{grid-row:1/3;grid-column:4;background:var(--bg2);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-  #chat h4{margin:0;padding:1rem;border-top:3px solid var(--lar);border-bottom:1px solid var(--line);color:var(--txt2);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
-  #msgs{flex:1;overflow:auto;padding:.8rem;display:flex;flex-direction:column;gap:.7rem}
-  .msg{display:flex;gap:.5rem}
-  .msg .quem{font-weight:700;font-size:.85rem}
-  .msg .hora{color:var(--txt2);font-size:.7rem;margin-left:.3rem;font-weight:400}
-  .msg .txt{white-space:pre-wrap;word-break:break-word;font-size:.92rem}
-  #formChat{display:flex;gap:.4rem;padding:.6rem;border-top:1px solid var(--line)}
-  #formChat input{flex:1;min-width:0}
+  #chat{grid-row:1/3;grid-column:4;background:var(--bg2);display:flex;flex-direction:column;min-height:0}
+  #chat .topo{height:56px;display:flex;align-items:center;padding:0 1rem;border-bottom:1px solid var(--line);font-weight:700}
+  #msgs{flex:1;overflow:auto;padding:1rem;display:flex;flex-direction:column;gap:.9rem}
+  .msg{display:flex;gap:.6rem}
+  .msg .av{width:34px;height:34px}
+  .msg .quem{font-weight:700;font-size:.88rem}
+  .msg .hora{color:var(--txt2);font-size:.7rem;margin-left:.35rem;font-weight:400}
+  .msg .txt{white-space:pre-wrap;word-break:break-word;font-size:.92rem;line-height:1.4;margin-top:.1rem}
+  #formChat{padding:.8rem}
+  #inMsg{width:100%;background:var(--bg3);border-color:transparent}
 
-  #controles{grid-column:3;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;align-items:center;padding:.7rem;border-top:1px solid var(--line);background:var(--bg2)}
+  #controles{grid-column:3;display:flex;gap:.5rem;justify-content:center;align-items:center;padding:.7rem;background:var(--bg)}
+  .ctl{display:flex;flex-direction:column;align-items:center;gap:.25rem;min-width:72px;padding:.55rem .6rem .45rem;border-radius:var(--raio);position:relative}
+  .ctl svg{width:22px;height:22px}
+  .ctl .rot{font-size:.72rem;color:var(--txt2)}
+  .ctl.ativo{background:var(--lar);color:var(--lartxt)}
+  .ctl.ativo .rot{color:var(--lartxt);font-weight:600}
+  .ctl.mudo{background:#ef444422;color:var(--verm)}
+  .ctl.mudo::after{content:"";position:absolute;top:10px;left:50%;width:26px;height:2.5px;background:var(--verm);transform:translateX(-50%) rotate(-45deg) translateY(10px);border-radius:2px}
+  .ctl.sair{background:var(--verm);color:#fff}
+  .ctl.sair .rot{color:#fff}
+  #selQualidade{background:var(--bg3);border:none;font-size:.8rem;padding:.5rem;align-self:stretch}
 
-  dialog{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:1.5rem;width:min(380px,92vw)}
-  dialog::backdrop{background:#000a}
-  dialog form{display:flex;flex-direction:column;gap:.8rem}
+  dialog{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:18px;padding:1.5rem;width:min(380px,92vw)}
+  dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}
+  dialog form{display:flex;flex-direction:column;gap:.9rem}
   dialog h3{margin:0}
   dialog .botoes{display:flex;gap:.5rem;justify-content:flex-end}
+  dialog .botoes .perigo{background:var(--verm);color:#fff}
 
-  #aviso{position:fixed;left:50%;bottom:5rem;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--line);padding:.6rem 1rem;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
-  #aviso.on{opacity:1}
+  #aviso{position:fixed;left:50%;bottom:6rem;transform:translate(-50%,10px);background:var(--bg4);padding:.65rem 1.1rem;border-radius:10px;opacity:0;transition:.2s;pointer-events:none;z-index:9;box-shadow:0 10px 30px #0008}
+  #aviso.on{opacity:1;transform:translate(-50%,0)}
 
   @media (max-width:1100px){
     #app{grid-template-columns:64px 1fr;grid-template-rows:auto 1fr auto 38vh}
     #trilho{grid-row:1/5}
-    #lateral{grid-row:1;grid-column:2;border-right:none;border-bottom:1px solid var(--line);max-height:32vh}
+    #lateral{grid-row:1;grid-column:2;border-bottom:1px solid var(--line);max-height:34vh}
+    #menuSrv{flex-direction:row;flex-wrap:wrap}
     #palco{grid-column:2}
-    #controles{grid-column:2}
-    #chat{grid-row:4;grid-column:2;border-left:none}
-    .srv,#eu{width:44px;height:44px}
+    #controles{grid-column:2;flex-wrap:wrap}
+    #chat{grid-row:4;grid-column:2;border-top:1px solid var(--line)}
+    .ctl{min-width:58px}
   }
 </style>
 </head>
@@ -107,8 +146,22 @@
 <!-- ============ LOGIN ============ -->
 <section id="login">
   <div class="cartao">
-    <div class="logo">Tel<span>ão</span></div>
-    <div class="sub">Servidores com chat, call, câmera e compartilhamento de tela.</div>
+    <svg class="logo-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffa53d"/>
+      <stop offset="1" stop-color="#ff5a00"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#lg)"/>
+  <rect x="11" y="14" width="42" height="28" rx="6" fill="#1f0e00"/>
+  <rect x="28.5" y="42" width="7" height="5" fill="#1f0e00"/>
+  <rect x="21" y="47" width="22" height="4.5" rx="2.25" fill="#1f0e00"/>
+  <circle cx="32" cy="28" r="4.2" fill="#ff8a2a"/>
+  <path d="M24.6 20.6a10.5 10.5 0 0 0 0 14.8M39.4 20.6a10.5 10.5 0 0 1 0 14.8" stroke="#ff8a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>
+    <h1 class="marca">Tel<span>ão</span></h1>
+    <p class="sub">Seus servidores com chat, call, câmera<br>e transmissão de tela, só pra galera.</p>
     <button id="btGoogle">
       <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
       Entrar com Google
@@ -120,8 +173,22 @@
 <!-- ============ APP ============ -->
 <section id="app" hidden>
   <nav id="trilho">
-    <div id="listaSrv" style="display:flex;flex-direction:column;align-items:center;gap:.5rem"></div>
+    <svg class="logo-svg" style="cursor:default" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="lg3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffa53d"/>
+      <stop offset="1" stop-color="#ff5a00"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#lg3)"/>
+  <rect x="11" y="14" width="42" height="28" rx="6" fill="#1f0e00"/>
+  <rect x="28.5" y="42" width="7" height="5" fill="#1f0e00"/>
+  <rect x="21" y="47" width="22" height="4.5" rx="2.25" fill="#1f0e00"/>
+  <circle cx="32" cy="28" r="4.2" fill="#ff8a2a"/>
+  <path d="M24.6 20.6a10.5 10.5 0 0 0 0 14.8M39.4 20.6a10.5 10.5 0 0 1 0 14.8" stroke="#ff8a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>
     <div class="sep"></div>
+    <div id="listaSrv"></div>
     <div class="srv mais" id="btNovoSrv" title="Criar servidor">+</div>
     <img id="eu" alt="sua conta" title="Sua conta">
   </nav>
@@ -129,40 +196,40 @@
   <aside id="lateral">
     <div class="topo">
       <div id="nomeSrv">Nenhum servidor</div>
-      <button id="btConvite" disabled>Copiar convite</button>
+      <button class="icone" id="btConvite" title="Copiar convite" hidden><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
     </div>
-    <h4>Call</h4>
-    <button class="prim" id="btCall" disabled>🔊 Entrar na call</button>
+    <div class="secao">Call</div>
+    <button class="prim" id="btCall" disabled>Entrar na call</button>
     <ul id="pessoas"></ul>
-    <div class="rodape">
-      <button id="btRenomear" hidden>Renomear servidor</button>
-      <button id="btSairSrv" hidden>Sair do servidor</button>
-      <button id="btExcluirSrv" class="perigo" hidden>Excluir servidor</button>
+    <div id="menuSrv">
+      <button class="texto" id="btRenomear" hidden>Renomear servidor</button>
+      <button class="texto" id="btSairSrv" hidden>Sair do servidor</button>
+      <button class="texto perigo" id="btExcluirSrv" hidden>Excluir servidor</button>
     </div>
   </aside>
 
   <main id="palco"></main>
 
   <aside id="chat">
-    <h4 id="tituloChat">Chat</h4>
+    <div class="topo" id="tituloChat">Chat</div>
     <div id="msgs"></div>
     <form id="formChat" autocomplete="off">
-      <input id="inMsg" maxlength="500" placeholder="Mensagem" disabled>
-      <button class="prim" disabled id="btEnviar">Enviar</button>
+      <input id="inMsg" maxlength="500" placeholder="Escreva uma mensagem…" disabled>
+      <button id="btEnviar" hidden disabled></button>
     </form>
   </aside>
 
   <footer id="controles" hidden>
-    <button id="btMic">🎤 Microfone ligado</button>
-    <button id="btCam">📷 Ligar câmera</button>
-    <button id="btSurdo" title="Desliga o som de todo mundo pra você">🎧 Som ligado</button>
+    <button class="ctl" id="btMic" title="Microfone"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span class="rot">Microfone</span></button>
+    <button class="ctl" id="btCam" title="Câmera"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3"/></svg><span class="rot">Câmera</span></button>
+    <button class="ctl" id="btSurdo" title="Áudio"><svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg><span class="rot">Áudio</span></button>
+    <button class="ctl" id="btTela" title="Transmitir"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M12 13V7M9 10l3-3 3 3"/></svg><span class="rot">Transmitir</span></button>
     <select id="selQualidade" title="Qualidade da transmissão">
-      <option value="720p30">720p · 30 fps</option>
-      <option value="1080p30" selected>1080p · 30 fps</option>
-      <option value="1080p60">1080p · 60 fps</option>
+      <option value="720p30">720p 30</option>
+      <option value="1080p30" selected>1080p 30</option>
+      <option value="1080p60">1080p 60</option>
     </select>
-    <button class="prim" id="btTela">🖥️ Compartilhar tela</button>
-    <button class="perigo" id="btDesligar">📞 Sair da call</button>
+    <button class="ctl sair" id="btDesligar" title="Sair da call"><svg viewBox="0 0 24 24"><path d="M4.5 13.5c4.5-4 10.5-4 15 0l-1.8 2.6-3.2-1.2v-2.4a9 9 0 0 0-5 0v2.4l-3.2 1.2Z"/></svg><span class="rot">Sair</span></button>
   </footer>
 </section>
 
@@ -264,6 +331,7 @@ function avatarHTML(nome, foto, id = "", classe = "av") {
     ? `<div class="${classe}"${idAttr} style="background-image:url('${esc(f)}')"></div>`
     : `<div class="${classe}"${idAttr} style="background:${cor(nome)}">${esc(iniciais(nome))}</div>`;
 }
+const rotulo = (id, t) => { const el = $(id); el.querySelector(".rot").textContent = t; el.title = t; };
 const srvDoc = (sid, ...p) => doc(db, "servidores", sid, ...p);
 const srvCol = (sid, ...p) => collection(db, "servidores", sid, ...p);
 
@@ -422,10 +490,10 @@ function renderLateral() {
   const s = S.servidores.get(S.atual);
   const dono = s && s.dono === S.user?.uid;
   $("nomeSrv").textContent = s ? s.nome : "Nenhum servidor";
-  $("tituloChat").textContent = s ? "# chat — " + s.nome : "Chat";
-  $("btConvite").disabled = !s;
+  $("tituloChat").textContent = s ? "# chat" : "Chat";
+  $("btConvite").hidden = !s;
   $("btCall").disabled = !s;
-  $("btCall").textContent = S.call && S.call === S.atual ? "✅ Você está na call" : "🔊 Entrar na call";
+  $("btCall").textContent = S.call && S.call === S.atual ? "Você está na call" : "Entrar na call";
   $("btCall").classList.toggle("ativo", !!(S.call && S.call === S.atual));
   $("btRenomear").hidden = !dono;
   $("btExcluirSrv").hidden = !dono;
@@ -648,8 +716,8 @@ const meuDoc = () => srvDoc(S.call, "pessoas", S.user.uid);
 function atualizarBotaoMic() {
   const t = S.mic?.getAudioTracks()[0];
   const ligado = !!t && t.enabled;
-  $("btMic").textContent = !t ? "🎤 Ligar microfone" : ligado ? "🎤 Microfone ligado" : "🔇 Microfone mudo";
-  $("btMic").classList.toggle("ativo", ligado);
+  rotulo("btMic", !t ? "Ligar mic" : ligado ? "Microfone" : "Mudo");
+  $("btMic").classList.toggle("mudo", !ligado);
 }
 $("btMic").onclick = async () => {
   if (!S.call) return;
@@ -671,14 +739,14 @@ $("btCam").onclick = async () => {
   try { S.cam = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } } }); }
   catch { return aviso("Não deu acesso à câmera."); }
   S.cam.getVideoTracks()[0].onended = () => desligarCam();
-  $("btCam").textContent = "📷 Câmera ligada"; $("btCam").classList.add("ativo");
+  rotulo("btCam", "Câmera"); $("btCam").classList.add("ativo");
   updateDoc(meuDoc(), { cam: true }).catch(() => {});
   atualizarTodos(); renderPalco();
 };
 function desligarCam(silencioso) {
   if (!S.cam) return;
   S.cam.getTracks().forEach(t => t.stop()); S.cam = null;
-  $("btCam").textContent = "📷 Ligar câmera"; $("btCam").classList.remove("ativo");
+  rotulo("btCam", "Câmera"); $("btCam").classList.remove("ativo");
   if (S.call && !silencioso) updateDoc(meuDoc(), { cam: false }).catch(() => {});
   atualizarTodos(); renderPalco();
 }
@@ -687,8 +755,8 @@ function desligarCam(silencioso) {
 $("btSurdo").onclick = () => {
   S.surdo = !S.surdo;
   for (const par of S.pares.values()) par.el.muted = S.surdo;
-  $("btSurdo").textContent = S.surdo ? "🔕 Ensurdecido" : "🎧 Som ligado";
-  $("btSurdo").classList.toggle("perigo", S.surdo);
+  rotulo("btSurdo", S.surdo ? "Ensurdecido" : "Áudio");
+  $("btSurdo").classList.toggle("mudo", S.surdo);
 };
 
 // ---------------------------------------------------------------- compartilhar tela
@@ -709,7 +777,7 @@ async function iniciarTela() {
   v.contentHint = q.frameRate >= 60 ? "motion" : "detail";
   v.onended = () => pararTela();
   atualizarTodos();
-  $("btTela").textContent = "⏹️ Parar transmissão"; $("btTela").classList.replace("prim", "perigo");
+  rotulo("btTela", "Parar live"); $("btTela").classList.add("ativo");
   updateDoc(meuDoc(), { tela: true }).catch(() => {});
   renderPalco();
 }
@@ -717,7 +785,7 @@ function pararTela(silencioso) {
   if (!S.tela) return;
   S.tela.getTracks().forEach(t => t.stop()); S.tela = null;
   atualizarTodos();
-  $("btTela").textContent = "🖥️ Compartilhar tela"; $("btTela").classList.replace("perigo", "prim");
+  rotulo("btTela", "Transmitir"); $("btTela").classList.remove("ativo");
   if (S.call && !silencioso) updateDoc(meuDoc(), { tela: false }).catch(() => {});
   renderPalco();
 }
@@ -733,11 +801,12 @@ $("selQualidade").onchange = async () => {
 
 // ---------------------------------------------------------------- palco
 const volumes = new Map();
+const LOGO = document.querySelector(".logo-svg").outerHTML.replace('id="lg"', 'id="lg2"').replace("url(#lg)", "url(#lg2)");
 function renderPalco() {
   const palco = $("palco");
   if (!S.atual) {
     palco.dataset.chave = "";
-    palco.innerHTML = `<div class="vazio">${S.servidores.size ? "Escolha um servidor na barra da esquerda." : "Você ainda não tem servidores.<br>Clique no <b>+</b> pra criar um ou abra um link de convite de um amigo."}</div>`;
+    palco.innerHTML = `<div class="vazio">${LOGO}<h2>${S.servidores.size ? "Escolha um servidor" : "Bem-vindo ao Telão"}</h2><p>${S.servidores.size ? "Seus servidores ficam na barra da esquerda." : "Clique no <b>+</b> pra criar seu primeiro servidor, ou abra um convite de um amigo."}</p></div>`;
     return;
   }
   const naCall = S.call === S.atual;
@@ -754,7 +823,7 @@ function renderPalco() {
   palco.innerHTML = "";
 
   if (!naCall) {
-    palco.innerHTML = `<div class="vazio">${S.pessoas.size ? `${S.pessoas.size} pessoa(s) na call agora.` : "A call está vazia."}<br>Clique em <b>🔊 Entrar na call</b> pra falar, ver as telas e transmitir.</div>`;
+    palco.innerHTML = `<div class="vazio">${LOGO}<h2>${S.pessoas.size ? `${S.pessoas.size} ${S.pessoas.size > 1 ? "pessoas" : "pessoa"} na call` : "A call está vazia"}</h2><p>Entre na call pra conversar, ver as telas e transmitir a sua.</p><button class="prim" onclick="document.getElementById('btCall').click()">Entrar na call</button></div>`;
     return;
   }
 
@@ -765,7 +834,7 @@ function renderPalco() {
     video.autoplay = true; video.playsInline = true; video.muted = true; video.srcObject = t.stream;
     video.ondblclick = () => div.requestFullscreen?.();
     div.appendChild(video);
-    div.insertAdjacentHTML("beforeend", `<div class="nome">🔴 ${esc(t.p.nome)}${meu ? " (sua tela)" : ""}</div>`);
+    div.insertAdjacentHTML("beforeend", `<div class="nome"><span class="ponto"></span>${esc(t.p.nome)}${meu ? " (sua tela)" : ""}</div>`);
     const acoes = document.createElement("div"); acoes.className = "acoes";
     if (!meu) {
       const vol = document.createElement("input"); vol.type = "range"; vol.min = 0; vol.max = 1; vol.step = .05; vol.title = "Volume";
@@ -773,10 +842,11 @@ function renderPalco() {
       vol.oninput = () => { volumes.set(t.uid, +vol.value); const par = S.pares.get(t.uid); if (par) par.el.volume = +vol.value; };
       acoes.appendChild(vol);
     }
-    const cheia = document.createElement("button"); cheia.textContent = "⛶ Tela cheia"; cheia.onclick = () => div.requestFullscreen?.();
+    const cheia = document.createElement("button"); cheia.textContent = "Tela cheia"; cheia.onclick = () => div.requestFullscreen?.();
     acoes.appendChild(cheia); div.appendChild(acoes);
     palco.appendChild(div);
   }
+  const grade = document.createElement("div"); grade.className = "grade"; palco.appendChild(grade);
   for (const [uid, p] of S.pessoas) {
     const meu = uid === meuUid;
     const div = document.createElement("div"); div.className = "tile"; div.id = "tile-" + uid;
@@ -791,7 +861,7 @@ function renderPalco() {
     } else {
       div.innerHTML = avatarHTML(p.nome, p.foto, "tav-" + uid) + rotulo;
     }
-    palco.appendChild(div);
+    grade.appendChild(div);
   }
 }
 
