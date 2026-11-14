@@ -6,38 +6,38 @@
 <title>Telão</title>
 <style>
   :root{
-    --bg:#0b0b0f; --bg2:#121218; --bg3:#1b1b24; --bg4:#24242f; --line:#2a2a36;
-    --txt:#ececf1; --txt2:#9a9aab; --roxo:#8b3dff; --verm:#e0344a; --verde:#2fbf71;
+    --bg:#0d0b09; --bg2:#15120f; --bg3:#201b16; --bg4:#2a231c; --line:#352b21;
+    --txt:#ececf1; --txt2:#9a9aab; --lar:#ff7a1a; --lar2:#ff9a3d; --lartxt:#1f0e00; --verm:#e0344a; --verde:#2fbf71;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
   button{font:inherit;cursor:pointer;border:none;border-radius:8px;padding:.6rem 1rem;background:var(--bg3);color:var(--txt)}
   button:hover{filter:brightness(1.2)}
   button:disabled{opacity:.5;cursor:default}
-  button.prim{background:var(--roxo);color:#fff;font-weight:600}
+  button.prim{background:var(--lar);color:var(--lartxt);font-weight:700}
   button.perigo{background:var(--verm);color:#fff}
   button.ativo{background:var(--verde);color:#06240f}
   input,select{font:inherit;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.6rem .8rem}
-  input:focus,select:focus{outline:2px solid var(--roxo)}
+  input:focus,select:focus{outline:2px solid var(--lar)}
   [hidden]{display:none!important}
 
   /* ---------- Login ---------- */
   #login{min-height:100%;display:grid;place-items:center;padding:1rem}
   .cartao{width:min(420px,100%);background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:2rem;display:flex;flex-direction:column;gap:1rem;text-align:center}
   .logo{font-size:2.2rem;font-weight:800}
-  .logo span{color:var(--roxo)}
+  .logo span{color:var(--lar)}
   .sub{color:var(--txt2)}
   #btGoogle{display:flex;align-items:center;justify-content:center;gap:.6rem;background:#fff;color:#1f1f1f;font-weight:600}
   .erro{color:var(--verm);font-size:.9rem;min-height:1.2em}
 
   /* ---------- App ---------- */
   #app{height:100%;display:grid;grid-template-columns:72px 230px 1fr 320px;grid-template-rows:1fr auto}
-  #trilho{grid-row:1/3;background:#08080b;display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:.7rem 0;overflow:auto}
+  #trilho{grid-row:1/3;background:#090706;display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:.7rem 0;overflow:auto}
   .srv{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;cursor:pointer;flex:none;transition:border-radius .15s;position:relative;user-select:none}
   .srv:hover,.srv.atual{border-radius:14px}
-  .srv.atual::before{content:"";position:absolute;left:-12px;width:5px;height:36px;border-radius:0 4px 4px 0;background:#fff}
+  .srv.atual::before{content:"";position:absolute;left:-12px;width:5px;height:36px;border-radius:0 4px 4px 0;background:var(--lar)}
   .srv.call::after{content:"🔊";position:absolute;right:-4px;bottom:-4px;font-size:.8rem}
-  .srv.mais{background:var(--bg3);color:var(--verde);font-size:1.6rem;font-weight:400}
+  .srv.mais{background:var(--bg3);color:var(--lar);font-size:1.6rem;font-weight:400}
   .sep{width:32px;height:2px;background:var(--line);flex:none}
   #eu{margin-top:auto;width:48px;height:48px;border-radius:50%;object-fit:cover;cursor:pointer;flex:none;background:var(--bg3)}
 
@@ -63,6 +63,7 @@
   .tile video.espelho{transform:scaleX(-1)}
   .tile.falando-tile{outline:3px solid var(--verde)}
   .tile .av{width:72px;height:72px;font-size:1.8rem}
+  .tile.tela{border-color:var(--lar)}
   .tile .nome{position:absolute;left:.5rem;bottom:.5rem;background:#000a;padding:.2rem .5rem;border-radius:6px;font-size:.85rem}
   .tile .acoes{position:absolute;right:.5rem;bottom:.5rem;display:flex;gap:.4rem;align-items:center;background:#000a;padding:.25rem .4rem;border-radius:6px}
   .tile .acoes button{padding:.2rem .5rem;font-size:.8rem}
@@ -70,7 +71,7 @@
   .vazio{color:var(--txt2);text-align:center;grid-column:1/-1;padding:3rem 1rem;line-height:1.6}
 
   #chat{grid-row:1/3;grid-column:4;background:var(--bg2);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-  #chat h4{margin:0;padding:1rem;border-bottom:1px solid var(--line);color:var(--txt2);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
+  #chat h4{margin:0;padding:1rem;border-top:3px solid var(--lar);border-bottom:1px solid var(--line);color:var(--txt2);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
   #msgs{flex:1;overflow:auto;padding:.8rem;display:flex;flex-direction:column;gap:.7rem}
   .msg{display:flex;gap:.5rem}
   .msg .quem{font-weight:700;font-size:.85rem}
@@ -268,7 +269,15 @@ const srvCol = (sid, ...p) => collection(db, "servidores", sid, ...p);
 
 // ---------------------------------------------------------------- login
 if (firebaseConfig.apiKey === "COLE_AQUI") $("erroLogin").textContent = "Falta colar a configuração do Firebase no index.html.";
-getRedirectResult(auth).catch(e => ($("erroLogin").textContent = "Erro no login: " + (e.code || e.message)));
+function explicarErro(e) {
+  if (e.code === "auth/unauthorized-domain") {
+    if (location.protocol === "file:")
+      return "Você abriu o arquivo direto do PC (file://). O login com Google não funciona assim: use o Live Server do VS Code ou o site no GitHub Pages.";
+    return `O endereço "${location.hostname}" não está autorizado. No Firebase: Authentication → Configurações → Domínios autorizados → Adicionar domínio → ${location.hostname}`;
+  }
+  return "Erro no login: " + (e.code || e.message);
+}
+getRedirectResult(auth).catch(e => ($("erroLogin").textContent = explicarErro(e)));
 
 $("btGoogle").onclick = async () => {
   $("erroLogin").textContent = "";
@@ -277,7 +286,7 @@ $("btGoogle").onclick = async () => {
   try { await signInWithPopup(auth, prov); }
   catch (e) {
     if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") return signInWithRedirect(auth, prov);
-    if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") $("erroLogin").textContent = "Erro no login: " + (e.code || e.message);
+    if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") $("erroLogin").textContent = explicarErro(e);
   }
 };
 
