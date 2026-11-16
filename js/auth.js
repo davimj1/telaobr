@@ -70,7 +70,6 @@ export function iniciarLogin({ aoEntrar }) {
 
   getRedirectResult(auth).catch(erro => ($("erroLogin").textContent = explicarErro(erro)));
   $("btGoogle").addEventListener("click", entrarComGoogle);
-  $("btConta").addEventListener("click", abrirConta);
   $("btUsuario").addEventListener("click", abrirConta);
   $("dlgConta").addEventListener("close", () => {
     const v = $("dlgConta").returnValue;

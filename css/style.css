@@ -306,23 +306,6 @@ body.modo-dm .membros { display: none; }
 .trilho__item--novo { background: var(--fundo-3); color: var(--laranja); font-size: 1.6rem; font-weight: 400; }
 .trilho__item--novo:hover { background: var(--laranja); color: var(--texto-no-laranja); }
 
-.trilho__conta {
-  margin-top: auto;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: none;
-  cursor: pointer;
-}
-.trilho__conta img {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  object-fit: cover;
-  outline: 2px solid transparent;
-  transition: outline-color var(--transicao);
-}
-.trilho__conta:hover img { outline-color: var(--laranja); }
-
 .trilho__item--dms { background: var(--fundo-3); }
 .trilho__item--dms img { width: 30px; height: 30px; }
 .trilho__item--atual.trilho__item--dms { background: var(--laranja); }

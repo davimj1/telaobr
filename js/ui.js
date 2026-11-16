@@ -2,7 +2,7 @@
  * ui.js — Redesenha a tela inteira e controla as abas do celular.
  */
 import { S, servidorAtual } from "./estado.js";
-import { $, criarAvatar, fotoSegura, imagemIniciais } from "./util.js";
+import { $, criarAvatar } from "./util.js";
 import { renderTrilho, renderTopoServidor } from "./servidores.js";
 import { renderCanais } from "./canais.js";
 import { renderListaDms } from "./dm.js";
@@ -73,7 +73,6 @@ function renderPainelUsuario() {
   $("meuNome").textContent = S.nome;
   $("meuStatus").textContent = S.afk ? "💤 AFK" : "● Online";
   $("meuStatus").classList.toggle("usuario__status--afk", S.afk);
-  $("fotoConta").src = fotoSegura(S.foto) || imagemIniciais(S.nome);
 }
 
 /** "Conectado em Lobby / Servidor" quando estou numa call. */
