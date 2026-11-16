@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Telão: servidores com chat, call, câmera e transmissão de tela para você e seus amigos.">
+  <meta name="description" content="Telão: servidores com canais de texto e voz, chat, call, câmera e transmissão de tela para você e seus amigos.">
   <meta name="theme-color" content="#ff7a1a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -19,7 +19,7 @@
     <section class="login__cartao" aria-labelledby="tituloLogin">
       <img class="login__logo" src="img/logo.svg" alt="Logo do Telão: uma tela com o sinal de ao vivo" width="88" height="88">
       <h1 id="tituloLogin" class="marca">Tel<span class="marca__destaque">ão</span></h1>
-      <p class="login__texto">Seus servidores com chat, call, câmera e transmissão de tela, só pra galera.</p>
+      <p class="login__texto">Seus servidores com canais de texto e voz, call, câmera e transmissão de tela, só pra galera.</p>
       <button id="btGoogle" class="botao botao--google" type="button">
         <img src="img/google.svg" alt="" width="18" height="18">
         Entrar com Google
@@ -33,11 +33,13 @@
   </main>
 
   <!-- ================================================= APP -->
-  <div id="telaApp" class="app" data-aba="servidores" hidden>
+  <div id="telaApp" class="app" data-aba="canais" hidden>
 
     <!-- Barra de servidores (esquerda) -->
     <nav class="trilho" aria-label="Seus servidores">
-      <img class="trilho__logo" src="img/logo.svg" alt="Telão" width="44" height="44">
+      <button id="btDms" class="trilho__item trilho__item--dms" type="button" title="Mensagens diretas" aria-label="Mensagens diretas">
+        <img src="img/logo.svg" alt="" width="30" height="30">
+      </button>
       <hr class="trilho__separador">
       <ul id="listaServidores" class="trilho__lista"></ul>
       <button id="btNovoServidor" class="trilho__item trilho__item--novo" type="button" title="Criar servidor" aria-label="Criar servidor">+</button>
@@ -46,84 +48,165 @@
       </button>
     </nav>
 
-    <!-- Painel do servidor -->
-    <aside class="lateral" aria-labelledby="nomeServidor">
-      <header class="lateral__topo">
-        <h2 id="nomeServidor" class="lateral__titulo">Nenhum servidor</h2>
-        <button id="btConvite" class="botao-icone" type="button" title="Copiar convite" aria-label="Copiar convite" hidden>
-          <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
-        </button>
-      </header>
-
-      <section class="lateral__call" aria-labelledby="tituloCall">
-        <h3 id="tituloCall" class="secao-titulo">Call</h3>
-        <button id="btCall" class="botao botao--primario botao--largo" type="button" disabled>Entrar na call</button>
-        <ul id="listaPessoas" class="pessoas" aria-label="Quem está na call"></ul>
+    <!-- Coluna lateral: canais do servidor OU lista de mensagens diretas -->
+    <aside class="lateral" aria-label="Canais e conversas">
+      <section id="lateralServidor" class="lateral__secao">
+        <header class="lateral__topo">
+          <div class="lateral__titulos">
+            <h2 id="nomeLateral" class="lateral__titulo">Nenhum servidor</h2>
+            <span id="cargoLateral" class="selo-cargo" hidden></span>
+          </div>
+          <button id="btConvite" class="botao-icone" type="button" title="Copiar convite" aria-label="Copiar convite" hidden>
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
+          </button>
+          <button id="btConfigServidor" class="botao-icone" type="button" title="Configurações do servidor" aria-label="Configurações do servidor" hidden>
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+          </button>
+        </header>
+        <nav id="listaCanais" class="canais" aria-label="Canais"></nav>
       </section>
 
-      <footer class="lateral__menu">
-        <button id="btRenomear" class="botao-texto" type="button" hidden>Renomear servidor</button>
-        <button id="btSairServidor" class="botao-texto" type="button" hidden>Sair do servidor</button>
-        <button id="btExcluir" class="botao-texto botao-texto--perigo" type="button" hidden>Excluir servidor</button>
+      <section id="lateralDms" class="lateral__secao" hidden>
+        <header class="lateral__topo">
+          <h2 class="lateral__titulo">Mensagens diretas</h2>
+          <button id="btNovaConversa" class="botao-icone" type="button" title="Nova conversa" aria-label="Nova conversa">+</button>
+        </header>
+        <ul id="listaDms" class="dms"></ul>
+      </section>
+
+      <!-- Quando estou numa call -->
+      <section id="painelConectado" class="conectado" aria-label="Voz conectada" hidden>
+        <button id="btIrParaCall" class="conectado__info" type="button">
+          <strong class="conectado__titulo">● Voz conectada</strong>
+          <span><span id="conectadoCanal"></span> / <span id="conectadoServidor"></span></span>
+        </button>
+        <button class="botao-icone botao-icone--perigo" type="button" data-acao="desconectar" title="Desconectar" aria-label="Desconectar">
+          <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 13.5c4.5-4 10.5-4 15 0l-1.8 2.6-3.2-1.2v-2.4a9 9 0 0 0-5 0v2.4l-3.2 1.2Z"/></svg>
+        </button>
+      </section>
+
+      <!-- Eu -->
+      <footer class="usuario">
+        <button id="btUsuario" class="usuario__info" type="button" title="Sua conta e status">
+          <span id="meuAvatar" class="usuario__avatar"></span>
+          <span class="usuario__textos">
+            <strong id="meuNome" class="usuario__nome"></strong>
+            <span id="meuStatus" class="usuario__status"></span>
+          </span>
+        </button>
+        <button class="botao-icone controle-mini" type="button" data-acao="mic" title="Microfone" aria-label="Microfone">
+          <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        </button>
+        <button class="botao-icone controle-mini" type="button" data-acao="surdo" title="Ensurdecer" aria-label="Ensurdecer">
+          <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>
+        </button>
+        <button class="botao-icone" type="button" data-acao="config-voz" title="Configurações de voz" aria-label="Configurações de voz">
+          <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        </button>
       </footer>
     </aside>
 
-    <!-- Telas ao vivo e pessoas -->
-    <main id="palco" class="palco" aria-label="Call"></main>
+    <!-- Conteúdo principal -->
+    <main class="principal">
 
-    <!-- Chat -->
-    <section class="chat" aria-labelledby="tituloChat">
-      <header class="chat__topo">
-        <h2 id="tituloChat" class="chat__titulo"># chat</h2>
-      </header>
-      <ol id="mensagens" class="chat__mensagens" aria-live="polite"></ol>
-      <form id="formChat" class="chat__form" autocomplete="off">
-        <label for="campoMensagem" class="so-leitor">Mensagem</label>
-        <input id="campoMensagem" class="campo" type="text" maxlength="500" placeholder="Escreva uma mensagem…" disabled>
-      </form>
-    </section>
+      <!-- Nada aberto -->
+      <section id="painelVazio" class="vazio vazio--principal">
+        <img class="vazio__logo" src="img/logo.svg" alt="" width="72" height="72">
+        <h2 id="vazioTitulo" class="vazio__titulo"></h2>
+        <p id="vazioTexto" class="vazio__texto"></p>
+      </section>
 
-    <!-- Controles da call -->
-    <footer id="controles" class="controles" hidden>
-      <button id="btMic" class="controle" type="button">
-        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-        <span class="controle__rotulo">Microfone</span>
-      </button>
-      <button id="btCam" class="controle" type="button" title="Câmera">
-        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3"/></svg>
-        <span class="controle__rotulo">Câmera</span>
-      </button>
-      <button id="btSurdo" class="controle" type="button">
-        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>
-        <span class="controle__rotulo">Áudio</span>
-      </button>
-      <button id="btTela" class="controle" type="button">
-        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M12 13V7M9 10l3-3 3 3"/></svg>
-        <span class="controle__rotulo">Transmitir</span>
-      </button>
-      <label id="campoQualidade" class="controle controle--select">
-        <span class="so-leitor">Qualidade da transmissão</span>
-        <select id="selQualidade" class="campo campo--select"></select>
-      </label>
-      <button id="btDesligar" class="controle controle--sair" type="button" title="Sair da call">
-        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 13.5c4.5-4 10.5-4 15 0l-1.8 2.6-3.2-1.2v-2.4a9 9 0 0 0-5 0v2.4l-3.2 1.2Z"/></svg>
-        <span class="controle__rotulo">Sair</span>
-      </button>
-    </footer>
+      <!-- Canal de texto ou DM -->
+      <section id="painelChat" class="painel-chat" aria-labelledby="tituloChat" hidden>
+        <header class="topo">
+          <h2 id="tituloChat" class="topo__titulo"></h2>
+          <button id="btVerFixadas" class="botao-icone" type="button" title="Mensagens fixadas" aria-label="Mensagens fixadas">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6l-1 6 4 4H6l4-4ZM12 14v7"/></svg>
+          </button>
+          <button id="btMembros" class="botao-icone" type="button" title="Mostrar/esconder membros" aria-label="Mostrar ou esconder membros" aria-pressed="true">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg>
+          </button>
+        </header>
+
+        <div id="barraFixadas" class="fixadas" hidden>
+          <button id="fixadaConteudo" class="fixadas__conteudo" type="button" title="Ir até a mensagem">
+            <span class="fixadas__rotulo">📌 Fixada <span id="fixadaContador"></span></span>
+            <strong id="fixadaAutor"></strong> <span id="fixadaTexto" class="fixadas__texto"></span>
+          </button>
+          <button id="btFixadaAnterior" class="botao-icone" type="button" title="Fixada mais antiga" aria-label="Fixada mais antiga">‹</button>
+          <button id="btFixadaProxima" class="botao-icone" type="button" title="Fixada mais nova" aria-label="Fixada mais nova">›</button>
+          <button id="btFecharFixadas" class="botao-icone" type="button" title="Esconder" aria-label="Esconder fixadas">×</button>
+        </div>
+
+        <ol id="mensagens" class="mensagens" aria-live="polite"></ol>
+
+        <div id="barraResposta" class="resposta" hidden>
+          <span>Respondendo <strong id="respostaAutor"></strong>: <span id="respostaTexto" class="resposta__texto"></span></span>
+          <button id="btCancelarResposta" class="botao-icone" type="button" title="Cancelar resposta" aria-label="Cancelar resposta">×</button>
+        </div>
+
+        <form id="formChat" class="compositor" autocomplete="off">
+          <button id="btAnexo" class="botao-icone" type="button" title="Enviar imagem ou arquivo" aria-label="Enviar imagem ou arquivo">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <input id="entradaArquivo" type="file" hidden>
+          <label for="campoMensagem" class="so-leitor">Mensagem</label>
+          <textarea id="campoMensagem" class="compositor__campo" rows="1" maxlength="2000" placeholder="Escreva uma mensagem…"></textarea>
+          <button id="btEmojiChat" class="botao-icone" type="button" title="Emoji" aria-label="Escolher emoji">😊</button>
+          <button class="botao botao--primario compositor__enviar" type="submit">Enviar</button>
+        </form>
+      </section>
+
+      <!-- Canal de voz -->
+      <section id="painelVoz" class="painel-voz" aria-labelledby="tituloVoz" hidden>
+        <header class="topo">
+          <h2 id="tituloVoz" class="topo__titulo"></h2>
+        </header>
+        <div id="palco" class="palco"></div>
+        <footer id="controlesVoz" class="controles" hidden>
+          <button class="controle" type="button" data-acao="mic">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            <span class="controle__rotulo">Microfone</span>
+          </button>
+          <button class="controle" type="button" data-acao="cam">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3"/></svg>
+            <span class="controle__rotulo">Câmera</span>
+          </button>
+          <button class="controle" type="button" data-acao="tela">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M12 13V7M9 10l3-3 3 3"/></svg>
+            <span class="controle__rotulo">Transmitir</span>
+          </button>
+          <label id="campoQualidade" class="controle controle--select">
+            <span class="so-leitor">Qualidade da transmissão</span>
+            <select id="selQualidade" class="campo campo--select"></select>
+          </label>
+          <button class="controle controle--sair" type="button" data-acao="desconectar" title="Sair do canal">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 13.5c4.5-4 10.5-4 15 0l-1.8 2.6-3.2-1.2v-2.4a9 9 0 0 0-5 0v2.4l-3.2 1.2Z"/></svg>
+            <span class="controle__rotulo">Sair</span>
+          </button>
+        </footer>
+      </section>
+    </main>
+
+    <!-- Membros (direita) -->
+    <aside class="membros" aria-labelledby="tituloMembros">
+      <h2 id="tituloMembros" class="so-leitor">Membros</h2>
+      <div id="listaMembros" class="membros__lista"></div>
+    </aside>
 
     <!-- Abas (só no celular) -->
     <nav class="abas" aria-label="Seções">
-      <button class="abas__botao" type="button" data-aba="servidores">
-        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
-        Servidores
+      <button class="abas__botao" type="button" data-aba="canais">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/></svg>
+        Canais
       </button>
-      <button class="abas__botao" type="button" data-aba="call">
-        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
-        Call
-      </button>
-      <button class="abas__botao" type="button" data-aba="chat">
+      <button class="abas__botao" type="button" data-aba="conversa">
         <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4Z"/></svg>
-        <span>Chat <span id="badgeChat" class="badge" hidden></span></span>
+        <span>Conversa <span id="badgeConversa" class="badge" hidden></span></span>
+      </button>
+      <button class="abas__botao" type="button" data-aba="membros">
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg>
+        Membros
       </button>
     </nav>
   </div>
@@ -131,14 +214,101 @@
   <!-- ================================================= JANELAS -->
   <dialog id="dlgServidor" class="janela">
     <form method="dialog" class="janela__form">
-      <h3 id="tituloDlgServidor" class="janela__titulo">Criar servidor</h3>
+      <h3 class="janela__titulo">Criar servidor</h3>
       <label for="campoNomeServidor" class="janela__rotulo">Nome do servidor</label>
       <input id="campoNomeServidor" class="campo" type="text" maxlength="40" placeholder="Ex.: Rolê de Sexta" required>
+      <label for="selModelo" class="janela__rotulo">Começar com os canais de</label>
+      <select id="selModelo" class="campo campo--select"></select>
+      <div class="janela__botoes">
+        <button class="botao" value="cancelar" formnovalidate>Cancelar</button>
+        <button class="botao botao--primario" value="ok">Criar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlgCanal" class="janela">
+    <form method="dialog" class="janela__form">
+      <h3 id="tituloDlgCanal" class="janela__titulo">Novo canal</h3>
+      <label for="campoNomeCanal" class="janela__rotulo">Nome do canal</label>
+      <input id="campoNomeCanal" class="campo" type="text" maxlength="40" placeholder="Ex.: geral" required>
       <div class="janela__botoes">
         <button class="botao" value="cancelar" formnovalidate>Cancelar</button>
         <button class="botao botao--primario" value="ok">Salvar</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="dlgConfigServidor" class="janela janela--larga">
+    <form method="dialog" class="janela__form">
+      <h3 class="janela__titulo">Configurações do servidor</h3>
+      <div class="config__abas" role="tablist">
+        <button class="config__aba" type="button" role="tab" aria-selected="true" aria-controls="cfgGeral">Geral</button>
+        <button class="config__aba" type="button" role="tab" aria-selected="false" aria-controls="cfgPermissoes">Permissões</button>
+        <button class="config__aba" type="button" role="tab" aria-selected="false" aria-controls="cfgBanidos">Banidos</button>
+      </div>
+
+      <section id="cfgGeral" class="config__painel" role="tabpanel">
+        <label for="campoRenomearServidor" class="janela__rotulo">Nome do servidor</label>
+        <div class="linha">
+          <input id="campoRenomearServidor" class="campo" type="text" maxlength="40">
+          <button id="btRenomearServidor" class="botao" type="button">Salvar nome</button>
+        </div>
+        <div class="linha linha--separada">
+          <button id="btSairServidor" class="botao-texto botao-texto--perigo" type="button">Sair do servidor</button>
+          <button id="btExcluirServidor" class="botao-texto botao-texto--perigo" type="button">Excluir servidor</button>
+        </div>
+      </section>
+
+      <section id="cfgPermissoes" class="config__painel" role="tabpanel" hidden>
+        <p id="avisoPermissoes" class="janela__texto"></p>
+        <div class="tabela-rolagem">
+          <table id="tabelaPermissoes" class="tabela-permissoes"></table>
+        </div>
+        <button id="btSalvarPermissoes" class="botao botao--primario" type="button">Salvar permissões</button>
+      </section>
+
+      <section id="cfgBanidos" class="config__painel" role="tabpanel" hidden>
+        <ul id="listaBanidos" class="banidos"></ul>
+      </section>
+
+      <div class="janela__botoes">
+        <button class="botao" value="fechar">Fechar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlgConfigVoz" class="janela">
+    <form method="dialog" class="janela__form">
+      <h3 class="janela__titulo">Configurações de voz</h3>
+      <fieldset class="grupo">
+        <legend class="janela__rotulo">Como o microfone funciona</legend>
+        <label class="opcao"><input id="modoMicSempre" type="radio" name="modoMic" value="sempre"> Detecção de voz (sempre aberto)</label>
+        <label class="opcao"><input id="modoMicPtt" type="radio" name="modoMic" value="ptt"> Apertar pra falar</label>
+        <p class="janela__texto">Tecla: <button id="btTeclaPtt" class="botao botao--pequeno" type="button">V</button></p>
+      </fieldset>
+      <label for="selQualidadeVoz" class="janela__rotulo">Qualidade do áudio</label>
+      <select id="selQualidadeVoz" class="campo campo--select"></select>
+      <label for="selMicrofone" class="janela__rotulo">Microfone</label>
+      <select id="selMicrofone" class="campo campo--select"></select>
+      <div class="janela__botoes">
+        <button class="botao" value="cancelar">Cancelar</button>
+        <button class="botao botao--primario" value="ok">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlgNovaConversa" class="janela">
+    <form method="dialog" class="janela__form">
+      <h3 class="janela__titulo">Nova conversa</h3>
+      <ul id="listaContatos" class="dms dms--contatos"></ul>
+      <div class="janela__botoes">
+        <button class="botao" value="fechar">Fechar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlgImagem" class="janela janela--imagem">
+    <img id="imagemGrande" class="janela__imagem" src="data:," alt="">
   </dialog>
 
   <dialog id="dlgConta" class="janela">
@@ -147,6 +317,7 @@
       <p id="infoConta" class="janela__texto"></p>
       <div class="janela__botoes">
         <button class="botao" value="fechar">Fechar</button>
+        <button id="btAfk" class="botao" value="afk">Ficar AFK</button>
         <button class="botao botao--perigo" value="sair">Sair da conta</button>
       </div>
     </form>
@@ -156,20 +327,49 @@
   <div id="audios" hidden></div>
 
   <!-- ================================================= MODELOS (usados pelo JavaScript) -->
-  <template id="modeloMensagem">
-    <li class="msg">
-      <div class="msg__corpo">
-        <p class="msg__cabecalho"><strong class="msg__autor"></strong> <time class="msg__hora"></time></p>
-        <p class="msg__texto"></p>
+  <template id="modeloSecaoCanais">
+    <section class="canais__secao">
+      <header class="canais__cabecalho">
+        <h3 class="canais__titulo"></h3>
+        <button class="canais__mais" type="button" title="Criar canal" aria-label="Criar canal">+</button>
+      </header>
+      <ul class="canais__lista"></ul>
+    </section>
+  </template>
+
+  <template id="modeloCanal">
+    <li class="canais__item">
+      <div class="canais__linha">
+        <button class="canal" type="button">
+          <span class="canal__icone" aria-hidden="true"></span>
+          <span class="canal__nome"></span>
+        </button>
+        <button class="canal__opcoes" type="button" title="Opções do canal" aria-label="Opções do canal">⋯</button>
       </div>
+      <ul class="canal__pessoas"></ul>
     </li>
   </template>
 
-  <template id="modeloPessoa">
-    <li class="pessoa">
-      <span class="pessoa__nome"></span>
-      <span class="pessoa__vivo" hidden>AO VIVO</span>
-      <span class="pessoa__status"></span>
+  <template id="modeloMensagem">
+    <li class="msg">
+      <div class="msg__corpo">
+        <button class="msg__resposta" type="button" hidden>
+          ↪ <strong class="msg__resposta-autor"></strong> <span class="msg__resposta-texto"></span>
+        </button>
+        <p class="msg__cabecalho">
+          <strong class="msg__autor"></strong>
+          <span class="msg__cargo" hidden></span>
+          <time class="msg__hora"></time>
+        </p>
+        <div class="msg__texto"></div>
+        <div class="msg__anexo"></div>
+        <div class="msg__reacoes"></div>
+      </div>
+      <div class="msg__acoes">
+        <button class="msg__reagir" type="button" title="Reagir" aria-label="Reagir">🙂</button>
+        <button class="msg__responder" type="button" title="Responder" aria-label="Responder">↩</button>
+        <button class="msg__mais" type="button" title="Mais opções" aria-label="Mais opções">⋯</button>
+      </div>
     </li>
   </template>
 
@@ -184,10 +384,6 @@
       <video autoplay playsinline muted></video>
       <span class="tile__nome"><span class="ponto-vivo" aria-hidden="true"></span><span class="tile__rotulo"></span></span>
       <div class="tile__acoes">
-        <label class="tile__campo">
-          <span class="so-leitor">Volume</span>
-          <input class="tile__volume" type="range" min="0" max="1" step="0.05">
-        </label>
         <button class="botao botao--pequeno tile__cheia" type="button">Tela cheia</button>
       </div>
     </article>

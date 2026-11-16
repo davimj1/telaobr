@@ -1,31 +1,63 @@
 /**
- * estado.js — Estado global do app (um objeto só, fácil de inspecionar no F12: window.Telao).
+ * estado.js — Estado global do app (um objeto só; no F12 digite Telao pra ver).
  */
+import { guardar } from "./util.js";
+
+const CONFIG_PADRAO = { modoMic: "sempre", teclaPtt: "KeyV", qualidadeVoz: "voz", micId: "" };
+
 export const S = {
-  // conta
-  user: null,          // usuário do Firebase Auth
-  nome: "",
-  foto: "",
+  /* conta */
+  user: null, nome: "", foto: "",
+  afk: false,
 
-  // servidores
-  servidores: new Map(), // id -> { nome, dono, membros, criadoEm }
-  atual: null,           // id do servidor aberto na tela
+  /* navegação */
+  modo: "servidor",          // "servidor" | "dm"
+  servidores: new Map(),     // id -> { nome, dono, membros, cargos, banidos, permissoes, criadoEm }
+  atual: null,               // servidor aberto
+  canais: new Map(),         // canais do servidor aberto: id -> { nome, tipo, ordem }
+  canalAtual: null,          // canal aberto (texto ou voz)
+  dms: new Map(),            // conversas diretas: id -> { membros, ultima }
+  dmAtual: null,
 
-  // call
-  call: null,            // id do servidor onde estou em call (ou null)
-  sessao: null,          // id aleatório desta entrada na call (muda a cada entrada)
-  entrouEm: 0,
-  batida: null,          // setInterval da presença
-  pessoas: new Map(),    // quem está na call do servidor aberto: uid -> dados
-  pares: new Map(),      // conexões WebRTC: uid -> par
-  mic: null, cam: null, tela: null, // MediaStreams locais
+  /* pessoas */
+  perfis: new Map(),         // uid -> { nome, foto, visto, status }
+  pessoas: new Map(),        // presença nos canais de voz do servidor ABERTO
+  pessoasCall: new Map(),    // presença no servidor onde EU estou em call
+
+  /* chat */
+  mensagens: [],             // mensagens do chat aberto
+  respondendo: null,         // { id, nome, texto }
+
+  /* call */
+  call: null,                // { sid, cid } onde estou conectado
+  sessao: null, entrouEm: 0, batida: null,
+  pares: new Map(),          // conexões WebRTC: uid -> par
+  volumes: new Map(),        // uid -> volume (0 a 1)
+  mic: null, cam: null, tela: null,
   surdo: false,
+  apertandoPtt: false,
 
-  // ouvintes do Firestore (funções para cancelar)
-  pararServidores: null, pararChat: null, pararPessoas: null, pararSinais: null,
+  /* preferências (salvas no navegador) */
+  config: { ...CONFIG_PADRAO, ...JSON.parse(guardar.ler("telao-config") || "{}") },
+
+  /* ouvintes do Firestore (funções pra cancelar) */
+  parar: {},
 };
+
+export function salvarConfig() {
+  guardar.salvar("telao-config", JSON.stringify(S.config));
+}
 
 /** Ordem fixa dos canais de mídia em cada conexão. */
 export const CANAL = { MIC: 0, TELA: 1, SOM_TELA: 2, CAM: 3 };
 
-window.Telao = S; // ajuda a depurar pelo console
+/** Servidor aberto (ou undefined). */
+export const servidorAtual = () => S.servidores.get(S.atual);
+
+/** Para um ouvinte do Firestore pelo nome. */
+export function parar(nome) {
+  S.parar[nome]?.();
+  delete S.parar[nome];
+}
+
+window.Telao = S;

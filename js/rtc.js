@@ -6,10 +6,11 @@
  *  2. O outro responde com uma RESPOSTA; os dois trocam candidatos ICE (caminhos de rede).
  *  3. Cada conexão já nasce com 4 canais fixos (mic, tela, som da tela, câmera).
  *     Ligar/desligar qualquer um é só trocar a faixa — sem renegociar.
+ * O WebRTC criptografa tudo de ponta a ponta entre as pessoas (DTLS-SRTP).
  */
 import { addDoc, deleteDoc, onSnapshot, query, where, srvCol, srvDoc } from "./firebase.js";
-import { S, CANAL } from "./estado.js";
-import { ICE, QUALIDADES, LIMITES } from "./config.js";
+import { S, CANAL, parar } from "./estado.js";
+import { ICE, QUALIDADES, QUALIDADES_VOZ, LIMITES } from "./config.js";
 import { $ } from "./util.js";
 import { renderPalco } from "./palco.js";
 import { detectarFala } from "./fala.js";
@@ -17,7 +18,8 @@ import { detectarFala } from "./fala.js";
 /* ------------------------------------------------------------ sinalização */
 
 async function enviarSinal(para, paraSessao, tipo, dados) {
-  await addDoc(srvCol(S.call, "sinais"), {
+  if (!S.call) return;
+  await addDoc(srvCol(S.call.sid, "sinais"), {
     de: S.user.uid, deSessao: S.sessao, para, paraSessao, tipo,
     dados: JSON.stringify(dados), ts: Date.now(),
   });
@@ -26,7 +28,7 @@ async function enviarSinal(para, paraSessao, tipo, dados) {
 /** Ouve os sinais endereçados a mim e apaga cada um depois de ler. */
 export function ouvirSinais(sid) {
   const q = query(srvCol(sid, "sinais"), where("para", "==", S.user.uid));
-  S.pararSinais = onSnapshot(q, snap => {
+  S.parar.sinais = onSnapshot(q, snap => {
     const novos = snap.docChanges()
       .filter(c => c.type === "added")
       .map(c => ({ id: c.doc.id, ...c.doc.data() }))
@@ -34,16 +36,13 @@ export function ouvirSinais(sid) {
     for (const sinal of novos) {
       deleteDoc(srvDoc(sid, "sinais", sinal.id)).catch(() => {});
       const velho = sinal.paraSessao !== S.sessao || sinal.ts < S.entrouEm - 5000;
-      if (S.call !== sid || velho) continue;
+      if (S.call?.sid !== sid || velho) continue;
       tratarSinal(sinal).catch(erro => console.warn("Sinal com problema:", erro));
     }
   });
 }
 
-export function pararSinais() {
-  S.pararSinais?.();
-  S.pararSinais = null;
-}
+export const pararSinais = () => parar("sinais");
 
 async function tratarSinal(sinal) {
   const dados = JSON.parse(sinal.dados);
@@ -72,7 +71,7 @@ function criarPar(uid, sessao) {
   const pc = new RTCPeerConnection(ICE);
   const par = {
     pc, sessao, filaIce: [],
-    som: new MediaStream(),     // mic + som da tela
+    som: new MediaStream(),     // voz + som da tela
     tela: new MediaStream(),
     cam: new MediaStream(),
     saida: document.createElement("audio"),
@@ -81,13 +80,14 @@ function criarPar(uid, sessao) {
   par.saida.setAttribute("playsinline", "");
   par.saida.srcObject = par.som;
   par.saida.muted = S.surdo;
+  par.saida.volume = S.volumes.get(uid) ?? 1;
   $("audios").append(par.saida);
 
   pc.onicecandidate = e => { if (e.candidate) enviarSinal(uid, sessao, "ice", e.candidate.toJSON()); };
   pc.ontrack = e => receberFaixa(uid, par, e);
   pc.onconnectionstatechange = () => {
     if (pc.connectionState === "failed") pc.restartIce?.();
-    if (pc.connectionState === "connected") { ajustarQualidade(par); limitarCamera(par); }
+    if (pc.connectionState === "connected") ajustarTudo(par);
   };
   S.pares.set(uid, par);
   return par;
@@ -137,9 +137,10 @@ function aplicarFaixas(par) {
   if (canais.length < 4) return;
   const trocar = (canal, faixa) => canais[canal].sender.replaceTrack(faixa || null).catch(() => {});
   trocar(CANAL.MIC, S.mic?.getAudioTracks()[0]);
-  trocar(CANAL.TELA, S.tela?.getVideoTracks()[0]).then(() => ajustarQualidade(par));
+  trocar(CANAL.TELA, S.tela?.getVideoTracks()[0]);
   trocar(CANAL.SOM_TELA, S.tela?.getAudioTracks()[0]);
-  trocar(CANAL.CAM, S.cam?.getVideoTracks()[0]).then(() => limitarCamera(par));
+  trocar(CANAL.CAM, S.cam?.getVideoTracks()[0]);
+  ajustarTudo(par);
 }
 
 /** Atualiza todas as conexões depois de ligar/desligar algo. */
@@ -147,26 +148,27 @@ export function aplicarEmTodos() {
   for (const par of S.pares.values()) aplicarFaixas(par);
 }
 
-/** Define a qualidade de envio da tela conforme o seletor. */
-export async function ajustarQualidade(par) {
-  const sender = par.pc.getTransceivers()[CANAL.TELA]?.sender;
+/** Limite de qualidade de um canal de envio. */
+async function limitar(par, canal, ajuste) {
+  const sender = par.pc.getTransceivers()[canal]?.sender;
   if (!sender) return;
-  const q = QUALIDADES[$("selQualidade").value];
   const p = sender.getParameters();
   if (!p.encodings?.length) p.encodings = [{}];
-  p.encodings[0].maxBitrate = q.bitrate;
-  p.encodings[0].maxFramerate = q.frameRate;
-  p.degradationPreference = q.frameRate >= 60 ? "maintain-framerate" : "maintain-resolution";
+  ajuste(p);
   await sender.setParameters(p).catch(() => {});
 }
 
-async function limitarCamera(par) {
-  const sender = par.pc.getTransceivers()[CANAL.CAM]?.sender;
-  if (!sender) return;
-  const p = sender.getParameters();
-  if (!p.encodings?.length) p.encodings = [{}];
-  p.encodings[0].maxBitrate = LIMITES.bitrateCamera;
-  await sender.setParameters(p).catch(() => {});
+/** Aplica qualidade de voz, de tela e de câmera numa conexão. */
+export function ajustarTudo(par) {
+  const voz = QUALIDADES_VOZ[S.config.qualidadeVoz] || QUALIDADES_VOZ.voz;
+  const tela = QUALIDADES[$("selQualidade").value] || QUALIDADES["1080p30"];
+  limitar(par, CANAL.MIC, p => { p.encodings[0].maxBitrate = voz.bitrate; });
+  limitar(par, CANAL.TELA, p => {
+    p.encodings[0].maxBitrate = tela.bitrate;
+    p.encodings[0].maxFramerate = tela.frameRate;
+    p.degradationPreference = tela.frameRate >= 60 ? "maintain-framerate" : "maintain-resolution";
+  });
+  limitar(par, CANAL.CAM, p => { p.encodings[0].maxBitrate = LIMITES.bitrateCamera; });
 }
 
 export function fecharPar(uid) {

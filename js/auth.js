@@ -2,14 +2,16 @@
  * auth.js — Login com Google e conta do usuário.
  */
 import {
-  auth, db, doc, setDoc, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+  auth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
   getRedirectResult, onAuthStateChanged, signOut,
 } from "./firebase.js";
-import { S } from "./estado.js";
-import { $, esc, fotoSegura, imagemIniciais } from "./util.js";
-import { NAVEGADOR_DE_APP, TEM_DIALOG } from "./compat.js";
+import { S, parar } from "./estado.js";
+import { $, esc } from "./util.js";
+import { NAVEGADOR_DE_APP } from "./compat.js";
 import { sairDaCall } from "./call.js";
 import { pararServidores } from "./servidores.js";
+import { fecharChat } from "./chat.js";
+import { pararPerfis, definirAfk } from "./perfis.js";
 
 /** Traduz os erros mais comuns do login pra algo que dá pra resolver. */
 function explicarErro(erro) {
@@ -45,17 +47,17 @@ async function entrarComGoogle() {
 /** Sai da call, para de ouvir o banco e desloga. */
 export async function sairDaConta() {
   await sairDaCall();
+  fecharChat();
   pararServidores();
+  parar("dms");
+  pararPerfis();
   await signOut(auth);
+  location.reload();
 }
 
-/** Mostra quem está logado e a opção de sair. */
 function abrirConta() {
-  if (!TEM_DIALOG) {
-    if (confirm(`Conectado como ${S.nome}.\nSair da conta?`)) sairDaConta();
-    return;
-  }
   $("infoConta").innerHTML = `<strong>${esc(S.nome)}</strong><br>${esc(S.user?.email || "")}`;
+  $("btAfk").textContent = S.afk ? "Voltar pra Online" : "Ficar AFK";
   $("dlgConta").showModal();
 }
 
@@ -69,23 +71,20 @@ export function iniciarLogin({ aoEntrar }) {
   getRedirectResult(auth).catch(erro => ($("erroLogin").textContent = explicarErro(erro)));
   $("btGoogle").addEventListener("click", entrarComGoogle);
   $("btConta").addEventListener("click", abrirConta);
+  $("btUsuario").addEventListener("click", abrirConta);
   $("dlgConta").addEventListener("close", () => {
-    if ($("dlgConta").returnValue === "sair") sairDaConta();
+    const v = $("dlgConta").returnValue;
+    if (v === "sair") sairDaConta();
+    if (v === "afk") { S.afkManual = !S.afk; definirAfk(!S.afk); }
   });
 
-  onAuthStateChanged(auth, async usuario => {
+  onAuthStateChanged(auth, usuario => {
     S.user = usuario;
     $("telaLogin").hidden = !!usuario;
     $("telaApp").hidden = !usuario;
     if (!usuario) return;
-
     S.nome = usuario.displayName || (usuario.email || "Sem nome").split("@")[0];
     S.foto = usuario.photoURL || "";
-    $("fotoConta").src = fotoSegura(S.foto) || imagemIniciais(S.nome);
-    $("fotoConta").alt = `Conta de ${S.nome}`;
-
-    await setDoc(doc(db, "usuarios", usuario.uid), { nome: S.nome, foto: S.foto, visto: Date.now() }, { merge: true })
-      .catch(() => {});
     aoEntrar();
   });
 }

@@ -57,8 +57,30 @@ export function telaCheia(elemento) {
   video?.webkitEnterFullscreen?.();
 }
 
+/**
+ * Navegadores antigos (Safari antes de 2022) não têm <dialog>.
+ * Aqui damos a eles um showModal()/close() simples, pra o resto do código não precisar saber.
+ */
+function instalarDialogoSimples() {
+  if (TEM_DIALOG) return;
+  for (const dlg of document.querySelectorAll("dialog")) {
+    dlg.returnValue = "";
+    dlg.showModal = () => { dlg.setAttribute("open", ""); dlg.classList.add("janela--simples"); };
+    dlg.close = valor => {
+      if (valor !== undefined) dlg.returnValue = valor;
+      dlg.removeAttribute("open");
+      dlg.dispatchEvent(new Event("close"));
+    };
+    dlg.querySelector("form[method=dialog]")?.addEventListener("submit", e => {
+      e.preventDefault();
+      dlg.close(e.submitter?.value ?? "");
+    });
+  }
+}
+
 /** Liga os ajustes que dependem de eventos da página. */
 export function iniciarCompat() {
+  instalarDialogoSimples();
   document.addEventListener("pointerdown", destravarAudio, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) return;

@@ -79,3 +79,93 @@ export const guardar = {
 
 /** Clona o modelo <template id="..."> e devolve o primeiro elemento. */
 export const doModelo = id => $(id).content.firstElementChild.cloneNode(true);
+
+/** Transforma o texto em nós, com links http(s) clicáveis e @menções destacadas. */
+export function textoRico(texto, nomesMencionaveis = []) {
+  const frag = document.createDocumentFragment();
+  const partes = String(texto).split(/(https?:\/\/[^\s<>"']+|@\S+)/g);
+  for (const parte of partes) {
+    if (!parte) continue;
+    if (/^https?:\/\//.test(parte)) {
+      const a = document.createElement("a");
+      a.href = parte; a.textContent = parte; a.target = "_blank"; a.rel = "noopener noreferrer";
+      frag.append(a);
+    } else if (parte.startsWith("@") && (parte === "@todos" || nomesMencionaveis.some(n => parte.slice(1).toLowerCase() === n.toLowerCase()))) {
+      const m = document.createElement("span");
+      m.className = "mencao"; m.textContent = parte;
+      frag.append(m);
+    } else frag.append(parte);
+  }
+  return frag;
+}
+
+/** Lê um arquivo como data URL (texto base64). */
+export const lerArquivo = arquivo => new Promise((ok, erro) => {
+  const leitor = new FileReader();
+  leitor.onload = () => ok(leitor.result);
+  leitor.onerror = erro;
+  leitor.readAsDataURL(arquivo);
+});
+
+/**
+ * Reduz uma imagem pra caber no banco (lado máximo e compressão).
+ * GIF pequeno fica como está pra não perder a animação.
+ */
+export async function comprimirImagem(arquivo, ladoMax, qualidade) {
+  if (arquivo.type === "image/gif" && arquivo.size < 700_000) return lerArquivo(arquivo);
+  const url = URL.createObjectURL(arquivo);
+  try {
+    const img = await new Promise((ok, erro) => { const i = new Image(); i.onload = () => ok(i); i.onerror = erro; i.src = url; });
+    const escala = Math.min(1, ladoMax / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.naturalWidth * escala);
+    canvas.height = Math.round(img.naturalHeight * escala);
+    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+    const webp = canvas.toDataURL("image/webp", qualidade);
+    return webp.startsWith("data:image/webp") ? webp : canvas.toDataURL("image/jpeg", qualidade);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** 1536 -> "1,5 KB" */
+export function tamanhoLegivel(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1).replace(".", ",") + " KB";
+  return (bytes / 1024 / 1024).toFixed(1).replace(".", ",") + " MB";
+}
+
+/** Id de conversa direta: sempre o mesmo pros dois, não importa quem começou. */
+export const idConversa = (a, b) => [a, b].sort().join("_");
+
+/** Fecha menus flutuantes abertos. */
+export function fecharMenus() {
+  document.querySelectorAll(".menu-flutuante").forEach(m => m.remove());
+}
+
+/**
+ * Mostra um menu pequeno perto de um elemento.
+ * @param {HTMLElement} ancora  elemento clicado
+ * @param {{rotulo:string, acao:Function, perigo?:boolean}[]} itens
+ */
+export function menuFlutuante(ancora, itens) {
+  fecharMenus();
+  const menu = document.createElement("div");
+  menu.className = "menu-flutuante";
+  menu.setAttribute("role", "menu");
+  for (const item of itens) {
+    const bt = document.createElement("button");
+    bt.type = "button";
+    bt.className = "menu-flutuante__item" + (item.perigo ? " menu-flutuante__item--perigo" : "");
+    bt.textContent = item.rotulo;
+    bt.setAttribute("role", "menuitem");
+    bt.addEventListener("click", () => { fecharMenus(); item.acao(); });
+    menu.append(bt);
+  }
+  document.body.append(menu);
+  const r = ancora.getBoundingClientRect();
+  const largura = menu.offsetWidth, altura = menu.offsetHeight;
+  menu.style.left = Math.max(8, Math.min(r.left, innerWidth - largura - 8)) + "px";
+  menu.style.top = (r.bottom + altura + 8 > innerHeight ? r.top - altura - 4 : r.bottom + 4) + "px";
+  setTimeout(() => document.addEventListener("click", fecharMenus, { once: true }), 0);
+}
