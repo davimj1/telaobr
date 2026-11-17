@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, onSnapshot, getDocs,
-  query, where, orderBy, limitToLast, arrayUnion, arrayRemove,
+  query, where, orderBy, limitToLast, arrayUnion, arrayRemove, deleteField,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./config.js";
 
@@ -20,7 +20,7 @@ export const db = getFirestore(app);
 export {
   GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut,
   doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, onSnapshot, getDocs,
-  query, where, orderBy, limitToLast, arrayUnion, arrayRemove,
+  query, where, orderBy, limitToLast, arrayUnion, arrayRemove, deleteField,
 };
 
 /** Documento dentro de um servidor. Ex.: srvDoc(id, "pessoas", uid) */

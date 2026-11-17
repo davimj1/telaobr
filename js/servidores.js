@@ -7,7 +7,7 @@ import {
 } from "./firebase.js";
 import { S, parar, servidorAtual } from "./estado.js";
 import { LIMITES, MODELOS, PERMISSOES_PADRAO } from "./config.js";
-import { $, cor, iniciais, aviso, copiar, confirmar, guardar } from "./util.js";
+import { $, cor, iniciais, aviso, copiar, confirmar, guardar, imagemSegura } from "./util.js";
 import { ehCelular } from "./compat.js";
 import { ouvirCanais, pararCanais, criarCanaisDoModelo } from "./canais.js";
 import { ouvirPessoas, pararPessoas, sairDaCall } from "./call.js";
@@ -131,8 +131,19 @@ export function renderTrilho() {
     const novidade = servidorNaoLido(id);
     const mencoes = mencoesNoServidor(id);
     li.classList.toggle("trilho__linha--novidade", novidade);
-    bt.style.backgroundColor = cor(srv.nome);
-    bt.textContent = iniciais(srv.nome);
+    // com foto: a capa vira o ícone (cortada no meio); sem foto: iniciais coloridas
+    const foto = imagemSegura(srv.capa);
+    if (foto) {
+      const img = document.createElement("img");
+      img.className = "trilho__foto";
+      img.src = foto;
+      img.alt = "";
+      bt.append(img);
+      bt.classList.add("trilho__item--foto");
+    } else {
+      bt.style.backgroundColor = cor(srv.nome);
+      bt.textContent = iniciais(srv.nome);
+    }
     bt.title = srv.nome;
     bt.setAttribute("aria-label", `Servidor ${srv.nome}` + (mencoes ? `, ${mencoes} menção` : novidade ? ", mensagens novas" : ""));
     if (mencoes) {
@@ -153,6 +164,10 @@ export function renderTrilho() {
 export function renderTopoServidor() {
   const srv = servidorAtual();
   $("nomeLateral").textContent = srv ? srv.nome : "Nenhum servidor";
+  const capa = imagemSegura(srv?.capa);
+  $("topoServidor").classList.toggle("lateral__topo--capa", !!capa);
+  $("imgCapa").hidden = !capa;
+  if (capa && $("imgCapa").src !== capa) $("imgCapa").src = capa;
   $("btConvite").hidden = !srv;
   $("btConfigServidor").hidden = !srv;
   $("cargoLateral").hidden = !srv;

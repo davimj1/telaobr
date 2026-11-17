@@ -282,6 +282,15 @@ body.modo-dm .membros { display: none; }
 .trilho__item:hover,
 .trilho__item--atual { border-radius: 14px; }
 
+/* servidor com foto de capa: a foto preenche a bolinha */
+.trilho__item--foto { padding: 0; background: var(--fundo-3); }
+.trilho__foto {
+  width: 100%; height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  transition: border-radius .2s;
+}
+
 /* barrinha laranja do servidor aberto */
 .trilho__item--atual::before {
   content: "";
@@ -344,6 +353,47 @@ body.modo-dm .membros { display: none; }
   border-bottom: 1px solid var(--borda);
 }
 .lateral__titulos { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+
+/* capa do servidor: imagem atrás do nome, com sombra embaixo pra ler o texto */
+.lateral__topo { position: relative; }
+.lateral__topo--capa {
+  height: 132px;
+  align-items: flex-end;
+  padding-bottom: .65rem;
+  overflow: hidden;
+  border-bottom: none;
+}
+.lateral__capa {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.lateral__topo--capa::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, #0000 25%, #000000d0);
+  pointer-events: none;
+}
+.lateral__topo--capa > :not(.lateral__capa) { position: relative; z-index: 1; }
+.lateral__topo--capa .lateral__titulo { color: #fff; text-shadow: 0 1px 4px #000; }
+.lateral__topo--capa .botao-icone { background: #0008; color: #fff; }
+.lateral__topo--capa .botao-icone:hover { background: #000b; }
+
+/* prévia da capa nas configurações */
+.capa-config {
+  display: grid;
+  place-items: center;
+  height: 110px;
+  overflow: hidden;
+  border: 1px dashed var(--borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--fundo-1);
+}
+.capa-config__imagem { width: 100%; height: 100%; object-fit: cover; }
+.capa-config__vazio { color: var(--texto-suave); font-size: .85rem; }
+.janela__texto--pequeno { font-size: .78rem; }
 .lateral__titulo,
 .topo__titulo {
   flex: 1;
@@ -1309,4 +1359,5 @@ body.modo-dm .mini-live { right: 1rem; }
     height: calc(var(--altura-topo) + env(safe-area-inset-top));
     padding-top: env(safe-area-inset-top);
   }
+  .lateral__topo--capa { height: calc(132px + env(safe-area-inset-top)); }
 }

@@ -48,7 +48,8 @@
     <!-- Coluna lateral: canais do servidor OU lista de mensagens diretas -->
     <aside class="lateral" aria-label="Canais e conversas">
       <section id="lateralServidor" class="lateral__secao">
-        <header class="lateral__topo">
+        <header id="topoServidor" class="lateral__topo">
+          <img id="imgCapa" class="lateral__capa" src="data:," alt="" hidden>
           <div class="lateral__titulos">
             <h2 id="nomeLateral" class="lateral__titulo">Nenhum servidor</h2>
             <span id="cargoLateral" class="selo-cargo" hidden></span>
@@ -280,6 +281,17 @@
           <input id="campoRenomearServidor" class="campo" type="text" maxlength="40">
           <button id="btRenomearServidor" class="botao" type="button">Salvar nome</button>
         </div>
+        <p class="janela__rotulo">Foto de capa</p>
+        <div class="capa-config">
+          <img id="previewCapa" class="capa-config__imagem" src="data:," alt="Capa atual do servidor" hidden>
+          <p id="semCapa" class="capa-config__vazio">Sem capa</p>
+        </div>
+        <div id="botoesCapa" class="linha">
+          <button id="btEscolherCapa" class="botao botao--pequeno" type="button">Escolher imagem</button>
+          <button id="btRemoverCapa" class="botao-texto botao-texto--perigo" type="button">Remover capa</button>
+          <input id="entradaCapa" type="file" accept="image/*" hidden>
+        </div>
+        <p id="dicaCapa" class="janela__texto janela__texto--pequeno">Aparece na bolinha do servidor e no topo da lista de canais. Dica: imagem deitada (tipo 3:1) fica melhor. Pode ser GIF.</p>
         <div class="linha linha--separada">
           <button id="btSairServidor" class="botao-texto botao-texto--perigo" type="button">Sair do servidor</button>
           <button id="btExcluirServidor" class="botao-texto botao-texto--perigo" type="button">Excluir servidor</button>

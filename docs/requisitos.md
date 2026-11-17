@@ -96,6 +96,11 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 | RF33 | O usuário deve poder ligar a câmera e **transmitir a tela com som**, escolhendo 720p30, 1080p30 ou 1080p60. | Alta |
 | RF34 | O sistema deve mostrar quem está falando, mudo, com câmera e ao vivo. | Média |
 
+### Personalização (versão 2.1)
+| ID | Requisito | Prioridade |
+|---|---|---|
+| RF46 | O dono deve poder colocar, trocar e remover uma foto de capa do servidor, exibida na bolinha do servidor e no topo da lista de canais para todos os membros. | Baixa |
+
 ### Avisos (versão 2.1)
 | ID | Requisito | Prioridade |
 |---|---|---|
@@ -280,6 +285,7 @@ classDiagram
     cargos: uid→cargo
     banidos[]
     permissoes: cargo→permissão→bool
+    capa
   }
   class Canal {
     id
@@ -407,3 +413,4 @@ flowchart TD
 | RF42 | `js/rtc.js` (`prepararIce`), `js/ponte.js` (configurar pelo site), `js/config.js` (`TURN`) |
 | RF43–RF45, RN10, RN11 | `js/chat.js` |
 | RNF10 | `js/util.js` (`confirmar`) |
+| RF46 | `js/membros.js` (configurações), `js/servidores.js` (exibição) |

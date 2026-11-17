@@ -5,7 +5,8 @@
 import { updateDoc, arrayRemove, arrayUnion, srvDoc } from "./firebase.js";
 import { S, servidorAtual } from "./estado.js";
 import { CARGOS, PERMISSOES, LIMITES } from "./config.js";
-import { $, criarAvatar, aviso, confirmar, menuFlutuante, esc } from "./util.js";
+import { $, criarAvatar, aviso, confirmar, menuFlutuante, esc, comprimirImagem, imagemSegura } from "./util.js";
+import { deleteField } from "./firebase.js";
 import { cargoDe, meuCargo, pode, possoAgirSobre, cargosQuePossoDar, permissoesDoCargo } from "./permissoes.js";
 import { perfil, statusDe } from "./perfis.js";
 import { abrirDm } from "./dm.js";
@@ -133,6 +134,10 @@ function renderConfigServidor() {
   $("btRenomearServidor").hidden = !souDono;
   $("btExcluirServidor").hidden = !souDono;
   $("btSairServidor").hidden = souDono;
+  renderPreviewCapa(srv.capa);
+  $("botoesCapa").hidden = !souDono;
+  $("dicaCapa").hidden = !souDono;
+  $("btRemoverCapa").hidden = !srv.capa;
 
   // Permissões: tabela cargo x permissão
   const tabela = $("tabelaPermissoes");
@@ -183,6 +188,41 @@ async function salvarPermissoes() {
     .catch(() => aviso("Você não tem permissão pra isso."));
 }
 
+/* ------------------------------------------------------------ foto de capa */
+
+const CAPA_LARGURA = 960;          // a capa aparece com ~240 px de largura; 960 fica nítida em tela retina
+const CAPA_MAX_CARACTERES = 450_000; // o servidor inteiro é baixado por todos os membros: capa leve
+
+function renderPreviewCapa(capa) {
+  const img = $("previewCapa");
+  const src = imagemSegura(capa);
+  img.hidden = !src;
+  $("semCapa").hidden = !!src;
+  if (src) img.src = src;
+}
+
+async function escolherCapa(arquivo) {
+  if (!arquivo) return;
+  if (!arquivo.type.startsWith("image/")) return aviso("Escolha uma imagem.");
+  try {
+    aviso("Preparando a capa…");
+    const capa = await comprimirImagem(arquivo, CAPA_LARGURA, 0.78);
+    if (capa.length > CAPA_MAX_CARACTERES) return aviso("Imagem muito pesada pra capa (GIF grande?). Tente outra.");
+    await updateDoc(srvDoc(S.atual), { capa });
+    renderPreviewCapa(capa);
+    $("btRemoverCapa").hidden = false;
+    aviso("Capa salva!");
+  } catch {
+    aviso("Não deu pra salvar a capa.");
+  }
+}
+
+async function removerCapa() {
+  await updateDoc(srvDoc(S.atual), { capa: deleteField() })
+    .then(() => { renderPreviewCapa(null); $("btRemoverCapa").hidden = true; aviso("Capa removida."); })
+    .catch(() => aviso("Não deu pra remover."));
+}
+
 async function renomearServidor() {
   const nome = $("campoRenomearServidor").value.trim().slice(0, LIMITES.tamanhoNome);
   if (!nome) return;
@@ -202,6 +242,9 @@ export function iniciarMembros() {
   }
   $("btSalvarPermissoes").addEventListener("click", salvarPermissoes);
   $("btRenomearServidor").addEventListener("click", renomearServidor);
+  $("btEscolherCapa").addEventListener("click", () => $("entradaCapa").click());
+  $("entradaCapa").addEventListener("change", e => { escolherCapa(e.target.files[0]); e.target.value = ""; });
+  $("btRemoverCapa").addEventListener("click", removerCapa);
   $("btExcluirServidor").addEventListener("click", () => { $("dlgConfigServidor").close(); excluirServidor(); });
   $("btSairServidor").addEventListener("click", () => { $("dlgConfigServidor").close(); sairDoServidor(); });
 }

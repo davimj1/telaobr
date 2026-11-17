@@ -34,6 +34,10 @@ export const aleatorio = () => Math.random().toString(36).slice(2, 10);
 /** Só aceita fotos https (a do Google). */
 export const fotoSegura = url => (/^https:\/\//.test(url || "") ? url : "");
 
+/** Imagem guardada no banco: aceita link https ou imagem embutida (data:image/...;base64). Nada de javascript: etc. */
+export const imagemSegura = url =>
+  (/^https:\/\//.test(url || "") || /^data:image\/(png|jpe?g|webp|gif);base64,[a-z0-9+/=]+$/i.test(url || "") ? url : "");
+
 /**
  * Cria o avatar de uma pessoa: foto se tiver, senão as iniciais coloridas.
  * @returns {HTMLElement}
