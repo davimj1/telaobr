@@ -65,10 +65,44 @@ export function aviso(texto) {
   timerAviso = setTimeout(() => el.classList.remove("visivel"), 2800);
 }
 
+/**
+ * Pergunta "tem certeza?" numa janela do próprio Telão (no lugar do confirm() do navegador).
+ * @returns {Promise<boolean>} true se a pessoa confirmou
+ */
+export function confirmar(texto, { titulo = "Tem certeza?", botao = "Confirmar", perigo = true, campo = null } = {}) {
+  const dlg = $("dlgConfirmar");
+  $("confirmarTitulo").textContent = titulo;
+  $("confirmarTexto").textContent = texto;
+  const ok = $("confirmarOk");
+  ok.textContent = botao;
+  ok.classList.toggle("botao--perigo", perigo);
+  ok.classList.toggle("botao--primario", !perigo);
+  $("confirmarCancelar").hidden = !!campo;
+  const entrada = $("confirmarCampo");
+  entrada.hidden = !campo;
+  entrada.value = campo || "";
+  dlg.returnValue = "";
+  dlg.showModal();
+  if (campo) { entrada.focus(); entrada.select(); }
+  // responde no clique (o evento "close" pode atrasar em aba de fundo)
+  const form = dlg.querySelector("form");
+  return new Promise(resolver => {
+    const terminar = sim => {
+      form.removeEventListener("submit", aoEnviar);
+      dlg.removeEventListener("cancel", aoCancelar);
+      resolver(sim);
+    };
+    const aoEnviar = e => terminar(e.submitter?.value === "ok" || (!e.submitter && !!campo));
+    const aoCancelar = () => terminar(false);
+    form.addEventListener("submit", aoEnviar);
+    dlg.addEventListener("cancel", aoCancelar);
+  });
+}
+
 /** Copia um texto; se o navegador não deixar, mostra pra pessoa copiar na mão. */
 export async function copiar(texto, mensagem = "Copiado!") {
   try { await navigator.clipboard.writeText(texto); aviso(mensagem); }
-  catch { prompt("Copie:", texto); }
+  catch { confirmar("Seu navegador não deixou copiar sozinho. Segure (ou dê Ctrl+C) no texto abaixo:", { titulo: "Copie o link", botao: "Pronto", perigo: false, campo: texto }); }
 }
 
 /** Lê/grava no localStorage sem quebrar em navegadores que bloqueiam. */

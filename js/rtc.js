@@ -10,8 +10,8 @@
  */
 import { addDoc, deleteDoc, onSnapshot, query, where, srvCol, srvDoc } from "./firebase.js";
 import { S, CANAL, parar } from "./estado.js";
-import { ICE, QUALIDADES, QUALIDADES_VOZ, LIMITES } from "./config.js";
-import { $ } from "./util.js";
+import { ICE, TURN, QUALIDADES, QUALIDADES_VOZ, LIMITES } from "./config.js";
+import { $, aviso } from "./util.js";
 import { renderPalco } from "./palco.js";
 import { detectarFala } from "./fala.js";
 
@@ -64,11 +64,47 @@ function descarregarFilaIce(par) {
   for (const c of par.filaIce.splice(0)) par.pc.addIceCandidate(c).catch(() => {});
 }
 
+/* ------------------------------------------------------------ TURN */
+
+let iceServers = ICE.iceServers;
+let turnValidoAte = 0;
+
+/**
+ * Busca as credenciais do TURN (se configurado) antes de entrar num canal de voz.
+ * Guarda por 1 hora. Se falhar, segue só com STUN — a call funciona na maioria das redes.
+ */
+export async function prepararIce() {
+  const temMetered = TURN.meteredApp && TURN.meteredChave;
+  if (!temMetered && !TURN.servidores.length) return;
+  if (Date.now() < turnValidoAte) return;
+
+  let extras = [...TURN.servidores];
+  if (temMetered) {
+    try {
+      const controle = new AbortController();
+      const timer = setTimeout(() => controle.abort(), 5000);
+      const url = `https://${encodeURIComponent(TURN.meteredApp)}.metered.live/api/v1/turn/credentials?apiKey=${encodeURIComponent(TURN.meteredChave)}`;
+      const resposta = await fetch(url, { signal: controle.signal });
+      clearTimeout(timer);
+      if (!resposta.ok) throw new Error("HTTP " + resposta.status);
+      const lista = await resposta.json();
+      if (Array.isArray(lista)) extras = extras.concat(lista);
+    } catch (erro) {
+      console.warn("TURN indisponível, seguindo só com STUN:", erro);
+    }
+  }
+  iceServers = [...ICE.iceServers, ...extras];
+  turnValidoAte = Date.now() + 60 * 60 * 1000;
+}
+
+/** Usa TURN? (pra mostrar a dica certa quando uma conexão falha) */
+export const usaTurn = () => iceServers.length > ICE.iceServers.length;
+
 /* ------------------------------------------------------------ conexões */
 
 /** Cria a conexão com uma pessoa e prepara onde o áudio/vídeo dela vai chegar. */
 function criarPar(uid, sessao) {
-  const pc = new RTCPeerConnection(ICE);
+  const pc = new RTCPeerConnection({ iceServers });
   const par = {
     pc, sessao, filaIce: [],
     som: new MediaStream(),     // voz + som da tela
@@ -86,11 +122,26 @@ function criarPar(uid, sessao) {
   pc.onicecandidate = e => { if (e.candidate) enviarSinal(uid, sessao, "ice", e.candidate.toJSON()); };
   pc.ontrack = e => receberFaixa(uid, par, e);
   pc.onconnectionstatechange = () => {
-    if (pc.connectionState === "failed") pc.restartIce?.();
+    if (pc.connectionState === "failed") {
+      pc.restartIce?.();
+      avisarFalha(uid);
+    }
     if (pc.connectionState === "connected") ajustarTudo(par);
+    renderPalco();
   };
   S.pares.set(uid, par);
   return par;
+}
+
+/** Avisa uma vez por pessoa quando não dá pra conectar (rede bloqueando). */
+const falhasAvisadas = new Set();
+function avisarFalha(uid) {
+  if (falhasAvisadas.has(uid)) return;
+  falhasAvisadas.add(uid);
+  const nome = S.pessoasCall.get(uid)?.nome || "alguém";
+  aviso(usaTurn()
+    ? `Não deu pra conectar com ${nome}. Tentando de novo…`
+    : `Não deu pra conectar com ${nome}. A rede de alguém bloqueia a call — configure o TURN (veja o LEIA-ME).`);
 }
 
 /** Coloca cada faixa recebida no lugar certo, pelo número do canal. */

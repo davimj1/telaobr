@@ -8,6 +8,7 @@ import { ehCelular } from "./compat.js";
 import { perfil, statusDe, ouvirPerfis } from "./perfis.js";
 import { abrirChat, fecharChat } from "./chat.js";
 import { renderTudo, irPara } from "./ui.js";
+import { avisar, atualizarTitulo, definirContadorDms, estouVendo } from "./avisos.js";
 
 /** Guarda "quando li cada conversa" separado por conta (duas contas no mesmo PC não se misturam). */
 const chaveLidas = () => "telao-dms-lidas:" + S.user.uid;
@@ -22,9 +23,16 @@ function naoLida(id, conversa) {
 
 function marcarLida(id) {
   const l = lidas();
-  l[id] = Date.now();
+  const ultima = S.dms.get(id)?.ultima?.ts || 0;
+  if ((l[id] || 0) >= Math.max(Date.now() - 1000, ultima)) return;
+  l[id] = Math.max(Date.now(), ultima); // max: o relógio de cada PC pode estar um pouco diferente
   guardar.salvar(chaveLidas(), JSON.stringify(l));
+  atualizarTitulo();
+  renderTudo();
 }
+
+const dmsNaoLidas = () => [...S.dms].filter(([id, c]) => naoLida(id, c)).length;
+const ultimasVistas = new Map(); // id -> ts (pra avisar só de mensagem nova de verdade)
 
 /* ------------------------------------------------------------ banco */
 
@@ -35,9 +43,28 @@ export function ouvirDms() {
     S.dms.clear();
     snap.forEach(d => S.dms.set(d.id, d.data()));
     ouvirPerfis([...S.dms.values()].flatMap(c => c.membros));
-    if (S.modo === "dm" && S.dmAtual) marcarLida(S.dmAtual);
+    for (const [id, c] of S.dms) avisarSeNova(id, c);
+    if (S.modo === "dm" && S.dmAtual && estouVendo()) marcarLida(S.dmAtual);
+    atualizarTitulo();
     renderTudo();
   }, () => {});
+}
+
+/** Mensagem direta nova de outra pessoa: som + notificação (se eu não estiver olhando a conversa). */
+function avisarSeNova(id, c) {
+  const u = c.ultima;
+  const antes = ultimasVistas.get(id);
+  ultimasVistas.set(id, u?.ts || 0);
+  if (antes === undefined || !u || u.ts <= antes || u.uid === S.user.uid) return;
+  if (S.modo === "dm" && S.dmAtual === id && estouVendo()) return;
+  const outro = outroDa(c);
+  avisar({
+    titulo: `Mensagem de ${perfil(outro).nome}`,
+    texto: u.texto,
+    som: "mensagem",
+    tag: "dm-" + id,
+    aoClicar: () => abrirDm(outro),
+  });
 }
 
 /** Abre (ou cria) a conversa com alguém. */
@@ -47,13 +74,14 @@ export async function abrirDm(uid) {
   await setDoc(doc(db, "dms", id), { membros }, { merge: true }).catch(() => {});
   S.modo = "dm";
   S.dmAtual = id;
-  marcarLida(id);
   abrirChat({
     chave: "dm:" + id,
     colecao: () => collection(db, "dms", id, "mensagens"),
     titulo: "@ " + perfil(uid).nome,
     contexto: "dm",
+    digitando: () => collection(db, "dms", id, "digitando"),
     aoEnviar: m => setDoc(doc(db, "dms", id), { membros, ultima: { uid: m.uid, texto: (m.texto || "📎 anexo").slice(0, 80), ts: m.ts } }, { merge: true }),
+    aoVer: () => marcarLida(id),
   });
   if (ehCelular()) irPara("conversa");
   renderTudo();
@@ -133,6 +161,7 @@ function abrirNovaConversa() {
 }
 
 export function iniciarDms() {
+  definirContadorDms(() => (S.user ? dmsNaoLidas() : 0));
   $("btDms").addEventListener("click", abrirModoDm);
   $("btNovaConversa").addEventListener("click", abrirNovaConversa);
 }

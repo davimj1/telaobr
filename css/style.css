@@ -436,6 +436,60 @@ body.modo-dm .membros { display: none; }
 .canal__pessoa-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .canal__pessoa-icones { flex: none; font-size: .72rem; }
 
+.canal--naolido { color: var(--texto); font-weight: 700; }
+.canais__linha:has(.canal--naolido)::before {
+  content: "";
+  position: absolute;
+  left: -.5rem;
+  width: 4px; height: 8px;
+  border-radius: 0 4px 4px 0;
+  background: var(--texto);
+}
+.canais__linha { position: relative; }
+.canal .selo-numero { margin-left: auto; }
+
+/* número vermelho (menções) */
+.selo-numero {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px; height: 18px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: var(--vermelho);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.trilho__item .selo-numero {
+  position: absolute;
+  right: -4px; bottom: -4px;
+  border: 3px solid var(--fundo-0);
+  height: 22px; min-width: 22px;
+}
+/* servidor com mensagem nova: tracinho branco à esquerda (igual à barra do servidor aberto, menor) */
+.trilho__linha--novidade .trilho__item:not(.trilho__item--atual)::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  width: 4px; height: 8px;
+  border-radius: 0 4px 4px 0;
+  background: var(--texto);
+}
+
+/* faixa "ativar notificações" */
+.faixa {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem .6rem .5rem 1rem;
+  background: var(--laranja-escuro, #c2560c);
+  color: #fff;
+  font-size: .86rem;
+}
+.faixa__texto { flex: 1; }
+.faixa .botao-icone { color: #fff; }
+
 /* --- mensagens diretas --- */
 .dms { flex: 1; min-height: 0; padding: .5rem; overflow-y: auto; }
 .dm {
@@ -707,6 +761,64 @@ body.modo-dm .membros { display: none; }
   font-size: .84rem;
 }
 
+.msg__editada { color: var(--texto-suave); font-size: .72rem; }
+.msg__edicao { display: flex; flex-direction: column; gap: .3rem; margin-top: .2rem; }
+.msg__editor { min-height: 60px; resize: vertical; font-size: .93rem; line-height: 1.4; }
+.msg__dica { color: var(--texto-suave); font-size: .75rem; }
+.msg__dica .botao-texto { padding: 0; color: var(--laranja-claro); font-size: inherit; }
+
+/* --- "fulano está digitando" --- */
+.digitando {
+  height: 1.35rem;
+  margin: 0 1rem;
+  overflow: hidden;
+  color: var(--texto-suave);
+  font-size: .78rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.digitando--ativo::before { content: "✍️ "; }
+
+/* --- busca --- */
+.busca {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .45rem .6rem .45rem 1rem;
+  border-bottom: 1px solid var(--borda);
+  background: var(--fundo-1);
+}
+.busca__campo { flex: 1; padding: .45rem .7rem; }
+.busca__contagem { color: var(--texto-suave); font-size: .78rem; white-space: nowrap; }
+.resultados {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: .3rem;
+  min-height: 0;
+  padding: .8rem;
+  overflow-y: auto;
+}
+.resultado {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  width: 100%;
+  padding: .6rem .8rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--fundo-1);
+  color: var(--texto);
+  font: inherit;
+  font-size: .9rem;
+  text-align: left;
+  cursor: pointer;
+}
+.resultado:hover { border-color: var(--laranja); }
+.resultado__texto { color: var(--texto-suave); line-height: 1.4; word-break: break-word; }
+.resultado mark { padding: 0 .1rem; border-radius: 3px; background: #ff7a1a55; color: var(--texto); }
+[aria-pressed="true"].botao-icone { background: var(--fundo-4); color: var(--texto); }
+
 /* --- responder e escrever --- */
 .resposta {
   display: flex;
@@ -899,6 +1011,33 @@ body.modo-dm .membros { display: none; }
 .campo--select { height: 100%; min-height: 54px; padding: .5rem; border: none; background: var(--fundo-3); font-size: .8rem; cursor: pointer; }
 .controles { border-top: 1px solid var(--borda); background: var(--fundo-1); }
 
+
+/* --- mini live (canto da tela) --- */
+.mini-live {
+  position: fixed;
+  top: calc(var(--altura-topo) + .8rem);
+  right: calc(var(--largura-membros) + 1rem);
+  z-index: 30;
+  width: min(340px, 40vw);
+  overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: #000;
+  box-shadow: 0 14px 40px #000c;
+}
+body.sem-membros .mini-live,
+body.modo-dm .mini-live { right: 1rem; }
+.mini-live__video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; cursor: pointer; }
+.mini-live__barra {
+  display: flex;
+  align-items: center;
+  gap: .1rem;
+  padding: .25rem .3rem .25rem .6rem;
+  background: var(--fundo-1);
+  font-size: .8rem;
+}
+.mini-live__nome { display: flex; flex: 1; align-items: center; gap: .4rem; min-width: 0; overflow: hidden; white-space: nowrap; }
+.mini-live .botao-icone { width: 30px; height: 30px; padding: 4px; }
 
 /* ============================== 11. Membros ============================== */
 .membros {
@@ -1154,8 +1293,17 @@ body.modo-dm .membros { display: none; }
   .compositor { margin: 0 .6rem .6rem; }
   .compositor__enviar { padding: .5rem .7rem; }
   .resposta { margin: 0 .6rem; }
+  .digitando { margin: 0 .7rem; }
 
   .campo, .compositor__campo { font-size: 16px; } /* evita o zoom automático do iPhone */
+
+  .mini-live,
+  body.sem-membros .mini-live,
+  body.modo-dm .mini-live {
+    top: calc(var(--altura-topo) + env(safe-area-inset-top) + .5rem);
+    right: .5rem;
+    width: min(56vw, 260px);
+  }
 
   .lateral__topo, .topo {
     height: calc(var(--altura-topo) + env(safe-area-inset-top));

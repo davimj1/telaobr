@@ -106,6 +106,13 @@
     <!-- Conteúdo principal -->
     <main class="principal">
 
+      <!-- Pedido de notificações (aparece uma vez) -->
+      <div id="faixaNotificacoes" class="faixa" hidden>
+        <span class="faixa__texto">🔔 Quer ser avisado quando te marcarem, mandarem mensagem direta ou entrarem na sua call?</span>
+        <button id="btAtivarNotificacoes" class="botao botao--primario botao--pequeno" type="button">Ativar</button>
+        <button id="btFecharFaixa" class="botao-icone" type="button" title="Agora não" aria-label="Agora não">×</button>
+      </div>
+
       <!-- Nada aberto -->
       <section id="painelVazio" class="vazio vazio--principal">
         <img class="vazio__logo" src="img/logo.svg" alt="" width="72" height="72">
@@ -117,6 +124,9 @@
       <section id="painelChat" class="painel-chat" aria-labelledby="tituloChat" hidden>
         <header class="topo">
           <h2 id="tituloChat" class="topo__titulo"></h2>
+          <button id="btBuscar" class="botao-icone" type="button" title="Buscar mensagens (Ctrl+F)" aria-label="Buscar mensagens" aria-pressed="false">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          </button>
           <button id="btVerFixadas" class="botao-icone" type="button" title="Mensagens fixadas" aria-label="Mensagens fixadas">
             <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6l-1 6 4 4H6l4-4ZM12 14v7"/></svg>
           </button>
@@ -124,6 +134,13 @@
             <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg>
           </button>
         </header>
+
+        <div id="barraBusca" class="busca" role="search" hidden>
+          <label for="campoBusca" class="so-leitor">Buscar neste chat</label>
+          <input id="campoBusca" class="campo busca__campo" type="search" placeholder="Buscar por texto ou nome…" autocomplete="off">
+          <span id="contagemBusca" class="busca__contagem" aria-live="polite"></span>
+          <button id="btFecharBusca" class="botao-icone" type="button" title="Fechar busca" aria-label="Fechar busca">×</button>
+        </div>
 
         <div id="barraFixadas" class="fixadas" hidden>
           <button id="fixadaConteudo" class="fixadas__conteudo" type="button" title="Ir até a mensagem">
@@ -136,6 +153,8 @@
         </div>
 
         <ol id="mensagens" class="mensagens" aria-live="polite"></ol>
+        <ol id="resultadosBusca" class="resultados" aria-label="Resultados da busca" hidden></ol>
+        <p id="digitando" class="digitando" aria-live="polite"></p>
 
         <div id="barraResposta" class="resposta" hidden>
           <span>Respondendo <strong id="respostaAutor"></strong>: <span id="respostaTexto" class="resposta__texto"></span></span>
@@ -189,6 +208,17 @@
     <aside class="membros" aria-labelledby="tituloMembros">
       <h2 id="tituloMembros" class="so-leitor">Membros</h2>
       <div id="listaMembros" class="membros__lista"></div>
+    </aside>
+
+    <!-- Live em andamento, no cantinho, quando não estou olhando o canal de voz -->
+    <aside id="miniLive" class="mini-live" aria-label="Live em andamento" hidden>
+      <video id="miniVideo" class="mini-live__video" autoplay playsinline muted title="Voltar pra call"></video>
+      <div class="mini-live__barra">
+        <span class="mini-live__nome"><span class="ponto-vivo" aria-hidden="true"></span><span id="miniNome"></span></span>
+        <button id="btMiniJanela" class="botao-icone" type="button" title="Janela flutuante (fica por cima de tudo)" aria-label="Janela flutuante">⧉</button>
+        <button id="btMiniAbrir" class="botao-icone" type="button" title="Abrir a call" aria-label="Abrir a call">⤢</button>
+        <button id="btMiniFechar" class="botao-icone" type="button" title="Esconder" aria-label="Esconder">×</button>
+      </div>
     </aside>
 
     <!-- Abas (só no celular) -->
@@ -312,10 +342,28 @@
     <form method="dialog" class="janela__form">
       <h3 class="janela__titulo">Sua conta</h3>
       <p id="infoConta" class="janela__texto"></p>
+      <fieldset class="grupo">
+        <legend class="janela__rotulo">Avisos</legend>
+        <label class="opcao"><input id="chkSons" type="checkbox"> Sons (mensagem, entrar e sair da call)</label>
+        <button id="btNotificacoes" class="botao botao--pequeno" type="button">Ativar notificações</button>
+      </fieldset>
       <div class="janela__botoes">
         <button class="botao" value="fechar">Fechar</button>
         <button id="btAfk" class="botao" value="afk">Ficar AFK</button>
         <button class="botao botao--perigo" value="sair">Sair da conta</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlgConfirmar" class="janela">
+    <form method="dialog" class="janela__form">
+      <h3 id="confirmarTitulo" class="janela__titulo"></h3>
+      <p id="confirmarTexto" class="janela__texto"></p>
+      <label for="confirmarCampo" class="so-leitor">Texto</label>
+      <input id="confirmarCampo" class="campo" type="text" readonly hidden>
+      <div class="janela__botoes">
+        <button id="confirmarCancelar" class="botao" value="cancelar">Cancelar</button>
+        <button id="confirmarOk" class="botao botao--perigo" value="ok">Confirmar</button>
       </div>
     </form>
   </dialog>

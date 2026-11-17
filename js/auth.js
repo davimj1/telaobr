@@ -12,6 +12,7 @@ import { sairDaCall } from "./call.js";
 import { pararServidores } from "./servidores.js";
 import { fecharChat } from "./chat.js";
 import { pararPerfis, definirAfk } from "./perfis.js";
+import { pararAtividade, renderOpcoesAvisos } from "./avisos.js";
 
 /** Traduz os erros mais comuns do login pra algo que dá pra resolver. */
 function explicarErro(erro) {
@@ -51,6 +52,7 @@ export async function sairDaConta() {
   pararServidores();
   parar("dms");
   pararPerfis();
+  pararAtividade();
   await signOut(auth);
   location.reload();
 }
@@ -58,6 +60,7 @@ export async function sairDaConta() {
 function abrirConta() {
   $("infoConta").innerHTML = `<strong>${esc(S.nome)}</strong><br>${esc(S.user?.email || "")}`;
   $("btAfk").textContent = S.afk ? "Voltar pra Online" : "Ficar AFK";
+  renderOpcoesAvisos();
   $("dlgConta").showModal();
 }
 

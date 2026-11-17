@@ -7,7 +7,7 @@ import {
 } from "./firebase.js";
 import { S, parar, servidorAtual } from "./estado.js";
 import { LIMITES, MODELOS, PERMISSOES_PADRAO } from "./config.js";
-import { $, cor, iniciais, aviso, copiar, guardar } from "./util.js";
+import { $, cor, iniciais, aviso, copiar, confirmar, guardar } from "./util.js";
 import { ehCelular } from "./compat.js";
 import { ouvirCanais, pararCanais, criarCanaisDoModelo } from "./canais.js";
 import { ouvirPessoas, pararPessoas, sairDaCall } from "./call.js";
@@ -15,6 +15,7 @@ import { ouvirPerfis } from "./perfis.js";
 import { meuCargo } from "./permissoes.js";
 import { renderTudo, irPara } from "./ui.js";
 import { abrirConfigServidor } from "./membros.js";
+import { sincronizarAtividade, servidorNaoLido, mencoesNoServidor } from "./avisos.js";
 
 const CHAVE_ULTIMO = "telao-ultimo-servidor";
 
@@ -28,6 +29,7 @@ export function ouvirServidores() {
     S.servidores.clear();
     snap.forEach(d => S.servidores.set(d.id, d.data()));
     ouvirPerfis([...S.servidores.values()].flatMap(s => s.membros || []));
+    sincronizarAtividade();
 
     if (S.call && !S.servidores.has(S.call.sid)) sairDaCall(); // fui expulso ou o servidor sumiu
     if (S.atual && !S.servidores.has(S.atual)) abrirServidor(null);
@@ -82,14 +84,14 @@ export async function tratarConvite() {
 }
 
 export async function sairDoServidor() {
-  if (!confirm("Sair deste servidor?")) return;
+  if (!await confirmar("Pra voltar, você vai precisar de um convite.", { titulo: "Sair do servidor?", botao: "Sair" })) return;
   const sid = S.atual;
   if (S.call?.sid === sid) await sairDaCall();
   await updateDoc(srvDoc(sid), { membros: arrayRemove(S.user.uid) }).catch(e => aviso("Erro: " + e.code));
 }
 
 export async function excluirServidor() {
-  if (!confirm("Excluir o servidor para todo mundo? Isso não tem volta.")) return;
+  if (!await confirmar("O servidor some pra todo mundo. Isso não tem volta.", { titulo: "Excluir servidor?", botao: "Excluir servidor" })) return;
   const sid = S.atual;
   if (S.call?.sid === sid) await sairDaCall();
   await deleteDoc(srvDoc(sid)).catch(e => aviso("Erro: " + e.code));
@@ -120,15 +122,25 @@ export function renderTrilho() {
   const ordenados = [...S.servidores].sort((a, b) => (a[1].criadoEm || 0) - (b[1].criadoEm || 0));
   const itens = ordenados.map(([id, srv]) => {
     const li = document.createElement("li");
+    li.className = "trilho__linha";
     const bt = document.createElement("button");
     bt.type = "button";
     bt.className = "trilho__item";
     bt.classList.toggle("trilho__item--atual", S.modo === "servidor" && id === S.atual);
     bt.classList.toggle("trilho__item--em-call", id === S.call?.sid);
+    const novidade = servidorNaoLido(id);
+    const mencoes = mencoesNoServidor(id);
+    li.classList.toggle("trilho__linha--novidade", novidade);
     bt.style.backgroundColor = cor(srv.nome);
     bt.textContent = iniciais(srv.nome);
     bt.title = srv.nome;
-    bt.setAttribute("aria-label", `Servidor ${srv.nome}`);
+    bt.setAttribute("aria-label", `Servidor ${srv.nome}` + (mencoes ? `, ${mencoes} menção` : novidade ? ", mensagens novas" : ""));
+    if (mencoes) {
+      const selo = document.createElement("span");
+      selo.className = "selo-numero";
+      selo.textContent = mencoes > 9 ? "9+" : mencoes;
+      bt.append(selo);
+    }
     bt.addEventListener("click", () => abrirServidor(id));
     li.append(bt);
     return li;

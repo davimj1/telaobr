@@ -3,7 +3,7 @@
  */
 import { guardar } from "./util.js";
 
-const CONFIG_PADRAO = { modoMic: "sempre", teclaPtt: "KeyV", qualidadeVoz: "voz", micId: "" };
+const CONFIG_PADRAO = { modoMic: "sempre", teclaPtt: "KeyV", qualidadeVoz: "voz", micId: "", sons: true };
 
 export const S = {
   /* conta */
@@ -18,6 +18,7 @@ export const S = {
   canalAtual: null,          // canal aberto (texto ou voz)
   dms: new Map(),            // conversas diretas: id -> { membros, ultima }
   dmAtual: null,
+  atividade: new Map(),      // canais de TODOS os meus servidores: sid -> Map(cid -> canal), pra saber o que é novo
 
   /* pessoas */
   perfis: new Map(),         // uid -> { nome, foto, visto, status }
@@ -27,6 +28,7 @@ export const S = {
   /* chat */
   mensagens: [],             // mensagens do chat aberto
   respondendo: null,         // { id, nome, texto }
+  editando: null,            // id da mensagem que estou editando
 
   /* call */
   call: null,                // { sid, cid } onde estou conectado

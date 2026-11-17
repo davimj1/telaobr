@@ -5,11 +5,12 @@
 import { addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, srvCol, srvDoc } from "./firebase.js";
 import { S, parar, servidorAtual } from "./estado.js";
 import { LIMITES, MODELOS } from "./config.js";
-import { $, aviso, criarAvatar, doModelo, menuFlutuante } from "./util.js";
+import { $, aviso, confirmar, criarAvatar, doModelo, menuFlutuante } from "./util.js";
 import { ehCelular } from "./compat.js";
 import { pode } from "./permissoes.js";
 import { perfil } from "./perfis.js";
-import { abrirChat, fecharChat } from "./chat.js";
+import { abrirChat, fecharChat, resumoParaAviso } from "./chat.js";
+import { canalNaoLido, canalComMencao, marcarCanalLido } from "./avisos.js";
 import { entrarNaCall } from "./call.js";
 import { renderTudo, irPara } from "./ui.js";
 
@@ -68,11 +69,18 @@ export function abrirCanal(cid, { semTrocarAba = false } = {}) {
   if (!canal) return;
   S.canalAtual = cid;
   if (canal.tipo === "texto") {
+    const sid = S.atual;
     abrirChat({
-      chave: `canal:${S.atual}:${cid}`,
-      colecao: () => srvCol(S.atual, "canais", cid, "mensagens"),
+      chave: `canal:${sid}:${cid}`,
+      colecao: () => srvCol(sid, "canais", cid, "mensagens"),
+      digitando: () => srvCol(sid, "canais", cid, "digitando"),
       titulo: "# " + canal.nome,
       contexto: "canal",
+      // resumo da última mensagem no próprio canal: é assim que os outros sabem que tem novidade
+      aoEnviar: m => updateDoc(srvDoc(sid, "canais", cid), {
+        ultima: resumoParaAviso(m, S.servidores.get(sid)?.membros || []),
+      }).catch(() => {}),
+      aoVer: () => marcarCanalLido(cid, Math.max(Date.now(), S.atividade.get(sid)?.get(cid)?.ultima?.ts || 0)),
     });
   } else {
     fecharChat();
@@ -119,7 +127,7 @@ async function salvarCanal() {
 
 async function apagarCanal(cid) {
   const canal = S.canais.get(cid);
-  if (!confirm(`Apagar o canal "${canal.nome}"? As mensagens dele somem da lista.`)) return;
+  if (!await confirmar(`As mensagens de "${canal.nome}" somem junto.`, { titulo: "Apagar canal?", botao: "Apagar canal" })) return;
   await deleteDoc(srvDoc(S.atual, "canais", cid)).catch(e => aviso("Erro: " + e.code));
 }
 
@@ -155,6 +163,17 @@ function criarItemCanal(cid, canal) {
   bt.querySelector(".canal__icone").textContent = canal.tipo === "voz" ? "🔊" : "#";
   bt.querySelector(".canal__nome").textContent = canal.nome;
   bt.addEventListener("click", () => abrirCanal(cid));
+  if (canal.tipo === "texto" && cid !== S.canalAtual) {
+    const atividade = S.atividade.get(S.atual)?.get(cid) || canal;
+    bt.classList.toggle("canal--naolido", canalNaoLido(cid, atividade));
+    if (canalComMencao(cid)) {
+      const selo = document.createElement("span");
+      selo.className = "selo-numero canal__mencao";
+      selo.textContent = "@";
+      selo.title = "Te marcaram aqui";
+      bt.append(selo);
+    }
+  }
 
   const btOpcoes = li.querySelector(".canal__opcoes");
   btOpcoes.hidden = !pode("gerenciarCanais");

@@ -1,10 +1,11 @@
 # Telão — Documento de Requisitos
 
-**Versão:** 2.0 · **Autor:** Davi (wasmorf) · **Data:** 16/11/2026
+**Versão:** 2.1 · **Autor:** Davi (wasmorf) · **Data:** 17/11/2026
 
 | Versão | Data | O que mudou |
 |---|---|---|
 | 1.0 | 14/11/2026 | Servidores, chat único, call única, câmera e transmissão de tela. |
+| 2.1 | 17/11/2026 | Avisos (não lidas, menções, sons, notificações, título da aba), live no cantinho e janela flutuante, TURN, editar mensagem, "digitando", busca e confirmações no visual do Telão. |
 | 2.0 | 16/11/2026 | Canais de texto e voz, modelos de servidor, chat completo (responder, reagir, fixar, imagens e arquivos, menções), cargos e permissões, expulsar/banir, mensagens diretas, status AFK e configurações de voz (apertar pra falar, qualidade, microfone, volume por pessoa). |
 
 ## 1. Visão geral
@@ -95,6 +96,29 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 | RF33 | O usuário deve poder ligar a câmera e **transmitir a tela com som**, escolhendo 720p30, 1080p30 ou 1080p60. | Alta |
 | RF34 | O sistema deve mostrar quem está falando, mudo, com câmera e ao vivo. | Média |
 
+### Avisos (versão 2.1)
+| ID | Requisito | Prioridade |
+|---|---|---|
+| RF35 | Canais com mensagem não lida devem aparecer em negrito, e servidores com novidade devem ter uma marca na barra de servidores. | Alta |
+| RF36 | Menções (@nome, @todos) não lidas devem mostrar um número vermelho no canal e no servidor. | Alta |
+| RF37 | O sistema deve tocar um som em menções, mensagens diretas e quando alguém entra ou sai da minha call (pode ser desligado). | Média |
+| RF38 | Com a aba escondida, o sistema deve mostrar notificação do sistema nesses mesmos casos, se a pessoa permitir. | Alta |
+| RF39 | O título da aba deve mostrar quantas menções e mensagens diretas não lidas existem, ex.: "(3) Telão". | Média |
+
+### Live e conexão (versão 2.1)
+| ID | Requisito | Prioridade |
+|---|---|---|
+| RF40 | Ao sair do canal de voz pra outra tela, a live de quem está transmitindo deve continuar num quadrinho no canto. | Alta |
+| RF41 | O usuário deve poder abrir a live numa janela flutuante, por cima de outros programas. | Média |
+| RF42 | O sistema deve usar um servidor TURN, quando configurado, pra conectar pessoas em redes restritivas, e avisar quando uma conexão falhar. | Alta |
+
+### Chat (versão 2.1)
+| ID | Requisito | Prioridade |
+|---|---|---|
+| RF43 | O autor deve poder editar o texto da própria mensagem; a mensagem mostra "(editada)". | Alta |
+| RF44 | O chat deve mostrar quem está digitando. | Média |
+| RF45 | O usuário deve poder buscar nas últimas 1000 mensagens do chat por texto ou nome, sem diferenciar acento e maiúscula, e ir até a mensagem encontrada. | Média |
+
 ## 4. Requisitos não funcionais
 
 | ID | Tipo | Requisito |
@@ -108,6 +132,8 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 | RNF07 | Manutenibilidade | HTML semântico, um CSS externo organizado em seções, módulos JavaScript pequenos (um assunto por arquivo). |
 | RNF08 | Acessibilidade | Imagens com `alt`, campos com `label`, botões com rótulo, navegação por teclado. |
 | RNF09 | Identidade | Visual próprio do Telão (laranja e escuro, logo própria); não copiar visual nem marca de outros apps. |
+| RNF10 | Usabilidade | Confirmações ("tem certeza?") devem usar janelas no visual do Telão, não as caixas cinzas do navegador. |
+| RNF11 | Custo | Avisos de "mensagem nova" não podem exigir baixar as mensagens de todos os canais: cada canal guarda só um resumo da última mensagem. |
 
 ## 5. Regras de negócio
 
@@ -132,6 +158,10 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 | Expulsar membros | ✔ | ✔ | |
 | Banir membros | ✔ | | |
 | Dar cargos e mudar permissões | ✔ | | |
+
+- **RN10** — Só o autor edita uma mensagem, e só o texto. Mensagens de sistema não são editáveis.
+- **RN11** — "Está digitando" some depois de 6,5 segundos sem novo sinal.
+- **RN12** — Ao abrir o site num aparelho novo, as mensagens que já existiam contam como lidas.
 
 ## 6. Casos de uso
 
@@ -256,6 +286,12 @@ classDiagram
     nome
     tipo: texto | voz
     ordem
+    ultima: resumo da última mensagem
+  }
+  class Digitando {
+    uid
+    nome
+    ts
   }
   class Mensagem {
     uid
@@ -265,6 +301,7 @@ classDiagram
     respondendo
     reacoes: emoji→uids[]
     fixada
+    editada
     imagem
     arquivo
     tipo
@@ -293,6 +330,7 @@ classDiagram
   Usuario "1..*" -- "0..*" Servidor : membro de
   Servidor "1" *-- "0..*" Canal
   Canal "1" *-- "0..*" Mensagem
+  Canal "1" *-- "0..*" Digitando
   Servidor "1" *-- "0..*" Presenca
   Presenca "0..*" --> "1" Canal : está em
   Servidor "1" *-- "0..*" Sinal
@@ -364,3 +402,8 @@ flowchart TD
 | RNF02, RNF03 | `js/compat.js`, `css/style.css` (seção 13) |
 | RNF05, RNF06, RN01–RN03 | `firestore.rules` |
 | RN09 | `js/config.js` (`PERMISSOES_PADRAO`) e `firestore.rules` (`padrao`) |
+| RF35–RF39, RN12 | `js/avisos.js` (+ `js/dm.js`, `js/call.js`) |
+| RF40, RF41 | `js/palco.js` (`renderMiniLive`, `janelaFlutuante`) |
+| RF42 | `js/rtc.js` (`prepararIce`), `js/config.js` (`TURN`) |
+| RF43–RF45, RN10, RN11 | `js/chat.js` |
+| RNF10 | `js/util.js` (`confirmar`) |

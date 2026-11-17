@@ -2,9 +2,76 @@
  * palco.js — Canal de voz aberto: telas ao vivo em cima e as pessoas embaixo.
  */
 import { S } from "./estado.js";
-import { $, criarAvatar, doModelo } from "./util.js";
-import { PODE_TRANSMITIR, telaCheia } from "./compat.js";
+import { $, aviso, criarAvatar, doModelo } from "./util.js";
+import { PODE_TRANSMITIR, telaCheia, ehCelular } from "./compat.js";
 import { pessoasDoMeuCanal, entrarNaCall } from "./call.js";
+import { abaAtual, irParaCall } from "./ui.js";
+
+/* ------------------------------------------------------------ janela flutuante (Picture-in-Picture) */
+
+/** O navegador deixa pôr vídeo numa janelinha por cima de tudo? (Chrome, Edge, Safari; Firefox tem botão próprio no vídeo) */
+export const PODE_JANELA = !!document.pictureInPictureEnabled
+  || typeof HTMLVideoElement.prototype.webkitSetPresentationMode === "function";
+
+export async function janelaFlutuante(video) {
+  try {
+    if (document.pictureInPictureElement === video) return await document.exitPictureInPicture();
+    if (video.requestPictureInPicture) return await video.requestPictureInPicture();
+    video.webkitSetPresentationMode("picture-in-picture");
+  } catch {
+    aviso("Não deu pra abrir a janela flutuante neste navegador.");
+  }
+}
+
+/* ------------------------------------------------------------ mini live (quando saio do canal de voz) */
+
+let miniFechada = null; // id da transmissão que a pessoa fechou (volta se outra live começar)
+
+/** Lives de outras pessoas no meu canal de voz. */
+function livesDosOutros() {
+  if (!S.call) return [];
+  return pessoasDoMeuCanal()
+    .filter(([uid, p]) => uid !== S.user.uid && p.tela && streamDe(uid, "tela")?.getVideoTracks().length)
+    .map(([uid, p]) => ({ uid, p, stream: streamDe(uid, "tela") }));
+}
+
+/** Estou olhando o palco da minha call agora? */
+const vendoPalco = () => !!S.call && S.atual === S.call.sid && S.canalAtual === S.call.cid
+  && (!ehCelular() || abaAtual() === "conversa");
+
+/**
+ * Quadrinho da live no canto da tela quando estou no chat (ou em outro servidor).
+ * Mostra a live de quem está transmitindo no meu canal de voz.
+ */
+export function renderMiniLive() {
+  const mini = $("miniLive");
+  const video = $("miniVideo");
+  const lives = livesDosOutros();
+  const live = lives[0];
+  const emJanela = document.pictureInPictureElement === video;
+
+  if (!live) {
+    mini.hidden = true;
+    if (emJanela) document.exitPictureInPicture().catch(() => {});
+    video.srcObject = null;
+    return;
+  }
+  if (video.srcObject !== live.stream) video.srcObject = live.stream;
+  $("miniNome").textContent = live.p.nome + (lives.length > 1 ? ` +${lives.length - 1}` : "");
+  mini.hidden = vendoPalco() || miniFechada === live.stream.id;
+}
+
+export function iniciarMiniLive() {
+  const video = $("miniVideo");
+  $("btMiniJanela").hidden = !PODE_JANELA;
+  $("btMiniJanela").addEventListener("click", () => janelaFlutuante(video));
+  $("btMiniAbrir").addEventListener("click", irParaCall);
+  video.addEventListener("click", irParaCall);
+  $("btMiniFechar").addEventListener("click", () => {
+    miniFechada = video.srcObject?.id || null;
+    $("miniLive").hidden = true;
+  });
+}
 
 /** Stream de tela ou câmera de uma pessoa (a minha vem direto do S). */
 function streamDe(uid, tipo) {
@@ -21,6 +88,7 @@ function assinatura(conectado, pessoas, telas) {
 }
 
 export function renderPalco() {
+  renderMiniLive();
   const palco = $("palco");
   const canal = S.canais.get(S.canalAtual);
   if (!S.user || !canal || canal.tipo !== "voz") { palco.dataset.assinatura = ""; return; }
@@ -87,6 +155,15 @@ function criarTileTela({ uid, p, stream }) {
   const acoes = tile.querySelector(".tile__acoes");
   if (!meu) acoes.prepend(controleVolume(uid));
   tile.querySelector(".tile__cheia").addEventListener("click", () => telaCheia(tile));
+  if (PODE_JANELA && !meu) {
+    const bt = document.createElement("button");
+    bt.type = "button";
+    bt.className = "botao botao--pequeno";
+    bt.textContent = "Janela flutuante";
+    bt.title = "A live fica numa janelinha por cima de tudo, até de outros programas";
+    bt.addEventListener("click", () => janelaFlutuante(video));
+    tile.querySelector(".tile__cheia").before(bt);
+  }
   return tile;
 }
 

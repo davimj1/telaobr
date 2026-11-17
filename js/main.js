@@ -21,6 +21,7 @@
  *   midia.js        microfone, apertar-pra-falar, câmera, tela, ensurdecer
  *   palco.js        telas ao vivo e pessoas do canal de voz
  *   fala.js         indicador de quem está falando
+ *   avisos.js       não lidas, menções, sons, notificações e título da aba
  */
 import { iniciarCompat } from "./compat.js";
 import { iniciarAbas, renderTudo } from "./ui.js";
@@ -33,6 +34,8 @@ import { iniciarMembros } from "./membros.js";
 import { iniciarDms, ouvirDms } from "./dm.js";
 import { iniciarCall } from "./call.js";
 import { iniciarMidia } from "./midia.js";
+import { iniciarAvisos } from "./avisos.js";
+import { iniciarMiniLive } from "./palco.js";
 
 iniciarCompat();
 iniciarAbas();
@@ -43,6 +46,8 @@ iniciarMembros();
 iniciarDms();
 iniciarCall();
 iniciarMidia();
+iniciarAvisos();
+iniciarMiniLive();
 
 iniciarLogin({
   async aoEntrar() {

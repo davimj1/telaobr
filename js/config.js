@@ -16,14 +16,29 @@ export const firebaseConfig = {
 
 /**
  * Servidores que ajudam as pessoas a se conectarem direto (WebRTC).
- * STUN resolve a maioria das redes. Se algum amigo não conseguir ver/ouvir,
- * crie um TURN grátis (ex.: Metered.ca) e descomente a linha de baixo.
+ * STUN resolve a maioria das redes (Wi-Fi de casa).
  */
 export const ICE = {
   iceServers: [
     { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
-    // { urls: "turn:SEU_SERVIDOR:3478", username: "usuario", credential: "senha" },
   ],
+};
+
+/**
+ * TURN: "ponte" pra quem está no 4G, na rede da faculdade ou da empresa
+ * e entra na call mas não ouve/vê ninguém. Passo a passo no LEIA-ME (seção 4).
+ *
+ * Jeito 1 (recomendado) — Metered grátis: preencha o nome do app e a chave.
+ *   O site busca as credenciais sozinho toda vez que alguém entra num canal de voz.
+ * Jeito 2 — qualquer outro TURN: cole os servidores em `servidores`.
+ *   Ex.: { urls: "turn:exemplo.com:3478", username: "usuario", credential: "senha" }
+ *
+ * Deixe tudo vazio pra não usar TURN.
+ */
+export const TURN = {
+  meteredApp: "",     // ex.: "telaobr" (de telaobr.metered.live)
+  meteredChave: "",   // a "API Key" da credencial, no painel da Metered
+  servidores: [],
 };
 
 /** Qualidades de transmissão de tela (bitrate = bits por segundo por pessoa assistindo). */
@@ -51,6 +66,9 @@ export const LIMITES = {
   presencaExpiraMs: 35_000,    // sem avisar por esse tempo = saiu da call
   batidaOnlineMs: 60_000,      // a cada quanto tempo avisa "estou online"
   onlineExpiraMs: 3 * 60_000,  // sem avisar por esse tempo = offline
+  digitandoMs: 3000,          // de quanto em quanto tempo aviso que estou digitando
+  digitandoExpiraMs: 6500,    // some "está digitando" depois disso sem sinal
+  buscaMaxMensagens: 1000,    // quantas mensagens antigas a busca olha
   afkMinutos: 10,              // sem mexer no mouse/teclado = AFK
   bitrateCamera: 1_000_000,
 };

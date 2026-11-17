@@ -5,7 +5,7 @@
 import { updateDoc, arrayRemove, arrayUnion, srvDoc } from "./firebase.js";
 import { S, servidorAtual } from "./estado.js";
 import { CARGOS, PERMISSOES, LIMITES } from "./config.js";
-import { $, criarAvatar, aviso, menuFlutuante, esc } from "./util.js";
+import { $, criarAvatar, aviso, confirmar, menuFlutuante, esc } from "./util.js";
 import { cargoDe, meuCargo, pode, possoAgirSobre, cargosQuePossoDar, permissoesDoCargo } from "./permissoes.js";
 import { perfil, statusDe } from "./perfis.js";
 import { abrirDm } from "./dm.js";
@@ -95,14 +95,14 @@ async function mudarCargo(uid, cargo) {
 }
 
 async function expulsar(uid) {
-  if (!confirm(`Expulsar ${perfil(uid).nome}? Ele pode voltar se receber um convite.`)) return;
+  if (!await confirmar(`${perfil(uid).nome} pode voltar se receber um convite.`, { titulo: `Expulsar ${perfil(uid).nome}?`, botao: "Expulsar" })) return;
   await updateDoc(srvDoc(S.atual), { membros: arrayRemove(uid) })
     .then(() => aviso("Membro expulso."))
     .catch(() => aviso("Você não tem permissão pra expulsar."));
 }
 
 async function banir(uid) {
-  if (!confirm(`Banir ${perfil(uid).nome}? Ele não vai conseguir voltar nem com convite.`)) return;
+  if (!await confirmar(`${perfil(uid).nome} não vai conseguir voltar nem com convite (dá pra desbanir depois).`, { titulo: `Banir ${perfil(uid).nome}?`, botao: "Banir" })) return;
   await updateDoc(srvDoc(S.atual), { membros: arrayRemove(uid), banidos: arrayUnion(uid) })
     .then(() => aviso("Membro banido."))
     .catch(() => aviso("Você não tem permissão pra banir."));

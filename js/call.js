@@ -7,9 +7,10 @@ import { S, parar } from "./estado.js";
 import { LIMITES } from "./config.js";
 import { aleatorio, aviso } from "./util.js";
 import { TEM_WEBRTC, manterTelaAcesa, soltarTela, destravarAudio } from "./compat.js";
-import { ouvirSinais, pararSinais, iniciarOferta, fecharPar, fecharTodos } from "./rtc.js";
+import { ouvirSinais, pararSinais, iniciarOferta, fecharPar, fecharTodos, prepararIce } from "./rtc.js";
 import { ligarMicrofone, desligarTudo, atualizarBotoes, micEstaAberto } from "./midia.js";
 import { renderTudo } from "./ui.js";
+import { avisar, tocar } from "./avisos.js";
 
 /** Meu documento de presença na call atual. */
 export const meuDoc = () => srvDoc(S.call.sid, "pessoas", S.user.uid);
@@ -48,12 +49,27 @@ export function pararPessoas() {
 
 /** Quem está no MEU canal de voz (pra conectar com cada um). */
 function ouvirPessoasCall(sid) {
+  let primeira = true;
   S.parar.pessoasCall = onSnapshot(srvCol(sid, "pessoas"), snap => {
     if (S.call?.sid !== sid) return;
+    const antes = new Set(pessoasDoMeuCanal().map(([uid]) => uid));
     S.pessoasCall = lerPresencas(snap);
+    if (!primeira) avisarEntradasESaidas(antes);
+    primeira = false;
     sincronizarConexoes();
     renderTudo();
   });
+}
+
+/** Som quando alguém entra ou sai do meu canal (e notificação se a aba estiver escondida). */
+function avisarEntradasESaidas(antes) {
+  const agora = new Map(pessoasDoMeuCanal());
+  const canal = (S.atividade.get(S.call.sid)?.get(S.call.cid) || S.canais.get(S.call.cid))?.nome || "canal de voz";
+  for (const [uid, p] of agora) {
+    if (uid === S.user.uid || antes.has(uid)) continue;
+    avisar({ titulo: `${p.nome} entrou em 🔊 ${canal}`, texto: "Toque pra voltar pro Telão", som: "entrou", tag: "voz-" + uid });
+  }
+  for (const uid of antes) if (uid !== S.user.uid && !agora.has(uid)) tocar("saiu");
 }
 
 /** Pessoas do meu canal (incluindo eu). */
@@ -79,7 +95,7 @@ export async function entrarNaCall(sid, cid) {
   if (!TEM_WEBRTC) return aviso("Este navegador não faz chamadas. Use Chrome, Edge, Firefox ou Safari atualizados.");
   if (S.call) await sairDaCall();
 
-  if (!S.mic) await ligarMicrofone({ silencioso: true });
+  await Promise.all([S.mic ? null : ligarMicrofone({ silencioso: true }), prepararIce()]);
   S.call = { sid, cid };
   S.sessao = aleatorio() + aleatorio();
   S.entrouEm = Date.now();
@@ -93,6 +109,7 @@ export async function entrarNaCall(sid, cid) {
 
   ouvirPessoasCall(sid);
   ouvirSinais(sid);
+  tocar("entrou");
   manterTelaAcesa();
   destravarAudio();
   atualizarBotoes();
@@ -108,6 +125,7 @@ export async function sairDaCall() {
   parar("pessoasCall");
   clearInterval(S.batida);
   soltarTela();
+  tocar("saiu");
   S.call = null;
   S.pessoasCall = new Map();
   await deleteDoc(srvDoc(call.sid, "pessoas", S.user.uid)).catch(() => {});

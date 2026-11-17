@@ -84,10 +84,20 @@ function renderPainelVoz() {
   const canal = S.call.sid === S.atual ? S.canais.get(S.call.cid) : null;
   $("conectadoCanal").textContent = canal ? canal.nome : "Canal de voz";
   $("conectadoServidor").textContent = srv?.nome || "";
-  $("btIrParaCall").onclick = () => import("./canais.js").then(m => {
-    if (S.atual !== S.call.sid) import("./servidores.js").then(s => { s.abrirServidor(S.call.sid); setTimeout(() => m.abrirCanal(S.call.cid), 300); });
-    else m.abrirCanal(S.call.cid);
-  });
+  $("btIrParaCall").onclick = irParaCall;
+}
+
+/** Abre o canal de voz onde estou conectado (mesmo se estiver em outro servidor). */
+export async function irParaCall() {
+  if (!S.call) return;
+  const { sid, cid } = S.call;
+  const { abrirCanal } = await import("./canais.js");
+  if (S.atual !== sid) {
+    const { abrirServidor } = await import("./servidores.js");
+    abrirServidor(sid);
+  }
+  const tentar = (n = 0) => S.canais.has(cid) ? abrirCanal(cid) : n < 20 && setTimeout(() => tentar(n + 1), 150);
+  tentar();
 }
 
 /* ------------------------------------------------------------ abas (celular) */
@@ -106,9 +116,11 @@ export function irPara(aba) {
   }
   if (aba === "conversa") {
     zerarNaoLidas();
+    S.chat?.aoVer?.();
     const lista = $("mensagens");
     lista.scrollTop = lista.scrollHeight;
   }
+  renderTudo(); // a mini live aparece/some conforme a aba
 }
 
 export function contarNaoLidas(quantidade) {
