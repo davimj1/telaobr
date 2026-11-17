@@ -338,7 +338,7 @@
     <img id="imagemGrande" class="janela__imagem" src="data:," alt="">
   </dialog>
 
-  <dialog id="dlgConta" class="janela">
+  <dialog id="dlgConta" class="janela janela--larga">
     <form method="dialog" class="janela__form">
       <h3 class="janela__titulo">Sua conta</h3>
       <p id="infoConta" class="janela__texto"></p>
@@ -346,6 +346,20 @@
         <legend class="janela__rotulo">Avisos</legend>
         <label class="opcao"><input id="chkSons" type="checkbox"> Sons (mensagem, entrar e sair da call)</label>
         <button id="btNotificacoes" class="botao botao--pequeno" type="button">Ativar notificações</button>
+      </fieldset>
+      <fieldset id="grupoPonte" class="grupo" hidden>
+        <legend class="janela__rotulo">Ponte de conexão (TURN)</legend>
+        <p id="ponteEstado" class="janela__texto"></p>
+        <label for="campoPonteUsuario" class="janela__rotulo">Username (Metered)</label>
+        <input id="campoPonteUsuario" class="campo" type="text" autocomplete="off" spellcheck="false">
+        <label for="campoPonteSenha" class="janela__rotulo">Password (Metered)</label>
+        <input id="campoPonteSenha" class="campo" type="password" autocomplete="new-password">
+        <label for="selPonteRegiao" class="janela__rotulo">Região</label>
+        <select id="selPonteRegiao" class="campo campo--select">
+          <option value="global">Global</option>
+          <option value="standard">Standard</option>
+        </select>
+        <button id="btSalvarPonte" class="botao botao--primario botao--pequeno" type="button">Salvar ponte</button>
       </fieldset>
       <div class="janela__botoes">
         <button class="botao" value="fechar">Fechar</button>

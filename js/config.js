@@ -28,16 +28,15 @@ export const ICE = {
  * TURN: "ponte" pra quem está no 4G, na rede da faculdade ou da empresa
  * e entra na call mas não ouve/vê ninguém. Passo a passo no LEIA-ME (seção 4).
  *
- * Jeito 1 (recomendado) — Metered grátis: preencha o nome do app e a chave.
- *   O site busca as credenciais sozinho toda vez que alguém entra num canal de voz.
- * Jeito 2 — qualquer outro TURN: cole os servidores em `servidores`.
- *   Ex.: { urls: "turn:exemplo.com:3478", username: "usuario", credential: "senha" }
- *
- * Deixe tudo vazio pra não usar TURN.
+ * Jeito 1 (recomendado) — pelo próprio site: clique na sua foto → "Ponte de conexão (TURN)",
+ *   cole o Username e o Password da Metered e salve. A senha fica no Firestore (config/turn),
+ *   NÃO aqui no código. Só quem entrou com Google lê; só quem salvou primeiro pode trocar.
+ * Jeito 2 — Metered com API Key: preencha meteredApp e meteredChave.
+ * Jeito 3 — servidores fixos aqui (a senha fica visível no GitHub).
  */
 export const TURN = {
-  meteredApp: "",     // ex.: "telaobr" (de telaobr.metered.live)
-  meteredChave: "",   // a "API Key" da credencial, no painel da Metered
+  meteredApp: "",
+  meteredChave: "",
   servidores: [],
 };
 

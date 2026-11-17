@@ -13,6 +13,7 @@ import { pararServidores } from "./servidores.js";
 import { fecharChat } from "./chat.js";
 import { pararPerfis, definirAfk } from "./perfis.js";
 import { pararAtividade, renderOpcoesAvisos } from "./avisos.js";
+import { renderPonte } from "./ponte.js";
 
 /** Traduz os erros mais comuns do login pra algo que dá pra resolver. */
 function explicarErro(erro) {
@@ -61,6 +62,7 @@ function abrirConta() {
   $("infoConta").innerHTML = `<strong>${esc(S.nome)}</strong><br>${esc(S.user?.email || "")}`;
   $("btAfk").textContent = S.afk ? "Voltar pra Online" : "Ficar AFK";
   renderOpcoesAvisos();
+  renderPonte();
   $("dlgConta").showModal();
 }
 

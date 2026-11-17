@@ -252,7 +252,10 @@ function renderFixadas() {
 function irParaMensagem(id) {
   const el = $("mensagens").querySelector(`[data-id="${CSS.escape(id)}"]`);
   if (!el) return aviso("Essa mensagem é antiga e não está carregada.");
-  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  // perto: rola suave; longe: pula direto (rolar milhares de pixels devagar cansa)
+  const lista = $("mensagens");
+  const distancia = Math.abs(el.getBoundingClientRect().top - lista.getBoundingClientRect().top);
+  el.scrollIntoView({ behavior: distancia > lista.clientHeight * 2 ? "instant" : "smooth", block: "center" });
   el.classList.add("msg--destaque");
   setTimeout(() => el.classList.remove("msg--destaque"), 1600);
 }

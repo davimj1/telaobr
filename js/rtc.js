@@ -8,7 +8,7 @@
  *     Ligar/desligar qualquer um é só trocar a faixa — sem renegociar.
  * O WebRTC criptografa tudo de ponta a ponta entre as pessoas (DTLS-SRTP).
  */
-import { addDoc, deleteDoc, onSnapshot, query, where, srvCol, srvDoc } from "./firebase.js";
+import { db, doc, getDoc, addDoc, deleteDoc, onSnapshot, query, where, srvCol, srvDoc } from "./firebase.js";
 import { S, CANAL, parar } from "./estado.js";
 import { ICE, TURN, QUALIDADES, QUALIDADES_VOZ, LIMITES } from "./config.js";
 import { $, aviso } from "./util.js";
@@ -74,11 +74,9 @@ let turnValidoAte = 0;
  * Guarda por 1 hora. Se falhar, segue só com STUN — a call funciona na maioria das redes.
  */
 export async function prepararIce() {
-  const temMetered = TURN.meteredApp && TURN.meteredChave;
-  if (!temMetered && !TURN.servidores.length) return;
   if (Date.now() < turnValidoAte) return;
-
-  let extras = [...TURN.servidores];
+  const temMetered = TURN.meteredApp && TURN.meteredChave;
+  let extras = [...TURN.servidores, ...await turnDoFirebase()];
   if (temMetered) {
     try {
       const controle = new AbortController();
@@ -96,6 +94,34 @@ export async function prepararIce() {
   iceServers = [...ICE.iceServers, ...extras];
   turnValidoAte = Date.now() + 60 * 60 * 1000;
 }
+
+/**
+ * Lê a credencial do TURN guardada no Firestore (config/turn), em vez de deixá-la no código.
+ * Monta os 4 jeitos de conectar que a Metered oferece (UDP, TCP, porta 443 e TLS),
+ * porque redes diferentes bloqueiam coisas diferentes.
+ */
+async function turnDoFirebase() {
+  try {
+    const snap = await getDoc(doc(db, "config", "turn"));
+    if (!snap.exists()) return [];
+    const { usuario, senha, regiao = "global" } = snap.data();
+    if (!usuario || !senha) return [];
+    const host = `${regiao}.relay.metered.ca`;
+    const credenciais = { username: usuario, credential: senha };
+    return [
+      { urls: `stun:stun.relay.metered.ca:80` },
+      { urls: `turn:${host}:80`, ...credenciais },
+      { urls: `turn:${host}:80?transport=tcp`, ...credenciais },
+      { urls: `turn:${host}:443`, ...credenciais },
+      { urls: `turns:${host}:443?transport=tcp`, ...credenciais },
+    ];
+  } catch {
+    return []; // sem permissão ou sem internet: segue só com STUN
+  }
+}
+
+/** Esquece a ponte guardada (depois de trocar a senha, a próxima call busca de novo). */
+export function esquecerIce() { turnValidoAte = 0; iceServers = ICE.iceServers; }
 
 /** Usa TURN? (pra mostrar a dica certa quando uma conexão falha) */
 export const usaTurn = () => iceServers.length > ICE.iceServers.length;

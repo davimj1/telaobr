@@ -110,7 +110,7 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 |---|---|---|
 | RF40 | Ao sair do canal de voz pra outra tela, a live de quem está transmitindo deve continuar num quadrinho no canto. | Alta |
 | RF41 | O usuário deve poder abrir a live numa janela flutuante, por cima de outros programas. | Média |
-| RF42 | O sistema deve usar um servidor TURN, quando configurado, pra conectar pessoas em redes restritivas, e avisar quando uma conexão falhar. | Alta |
+| RF42 | O sistema deve usar um servidor TURN, quando configurado, pra conectar pessoas em redes restritivas, e avisar quando uma conexão falhar. A senha do TURN fica no banco (configurada pelo site), nunca no código. | Alta |
 
 ### Chat (versão 2.1)
 | ID | Requisito | Prioridade |
@@ -404,6 +404,6 @@ flowchart TD
 | RN09 | `js/config.js` (`PERMISSOES_PADRAO`) e `firestore.rules` (`padrao`) |
 | RF35–RF39, RN12 | `js/avisos.js` (+ `js/dm.js`, `js/call.js`) |
 | RF40, RF41 | `js/palco.js` (`renderMiniLive`, `janelaFlutuante`) |
-| RF42 | `js/rtc.js` (`prepararIce`), `js/config.js` (`TURN`) |
+| RF42 | `js/rtc.js` (`prepararIce`), `js/ponte.js` (configurar pelo site), `js/config.js` (`TURN`) |
 | RF43–RF45, RN10, RN11 | `js/chat.js` |
 | RNF10 | `js/util.js` (`confirmar`) |
