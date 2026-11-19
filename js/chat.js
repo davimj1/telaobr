@@ -282,6 +282,16 @@ async function apagarMensagem(m) {
   await deleteDoc(refMensagem(m.id)).catch(() => aviso("Não deu pra apagar."));
 }
 
+/* ------------------------------------------------------------ escrever liberado? */
+
+/** Trava o campo de mensagem quando não dá pra escrever (ex.: DM com quem não é mais amigo). */
+export function atualizarCompositor() {
+  const motivo = S.chat?.bloqueio?.() || "";
+  const campo = $("campoMensagem");
+  for (const el of [campo, $("btAnexo"), $("btEmojiChat"), $("formChat").querySelector("[type=submit]")]) el.disabled = !!motivo;
+  campo.placeholder = motivo || "Escreva uma mensagem…";
+}
+
 /* ------------------------------------------------------------ editar */
 
 function comecarEdicao(m) {
@@ -522,6 +532,8 @@ function abrirImagem(src, alt) {
 
 async function enviar(extra = {}) {
   if (!S.chat) return;
+  const bloqueio = S.chat.bloqueio?.();
+  if (bloqueio) return aviso(bloqueio);
   const campo = $("campoMensagem");
   const texto = campo.value.trim().slice(0, LIMITES.tamanhoMensagem);
   if (!texto && !extra.imagem && !extra.arquivo) return;

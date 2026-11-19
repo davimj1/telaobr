@@ -24,6 +24,7 @@
  *   avisos.js       não lidas, menções, sons, notificações e título da aba
  *   ponte.js        configurar a ponte de conexão (TURN) pelo site
  *   app.js          instalar como app (PWA) e notificações pelo service worker
+ *   amigos.js       código de amigo, pedidos de amizade e tela de amigos
  */
 import { iniciarCompat } from "./compat.js";
 import { iniciarAbas, renderTudo } from "./ui.js";
@@ -40,6 +41,7 @@ import { iniciarAvisos } from "./avisos.js";
 import { iniciarMiniLive } from "./palco.js";
 import { iniciarPonte } from "./ponte.js";
 import { iniciarApp } from "./app.js";
+import { iniciarAmigos, aoEntrarAmigos } from "./amigos.js";
 
 iniciarCompat();
 iniciarApp();
@@ -54,12 +56,14 @@ iniciarMidia();
 iniciarAvisos();
 iniciarMiniLive();
 iniciarPonte();
+iniciarAmigos();
 
 iniciarLogin({
   async aoEntrar() {
     iniciarMeuStatus();
     ouvirServidores();
     ouvirDms();
+    aoEntrarAmigos();
     await tratarConvite();
     renderTudo();
   },

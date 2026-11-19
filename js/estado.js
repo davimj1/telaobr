@@ -18,6 +18,8 @@ export const S = {
   canalAtual: null,          // canal aberto (texto ou voz)
   dms: new Map(),            // conversas diretas: id -> { membros, ultima }
   dmAtual: null,
+  amizades: new Map(),       // uidA_uidB -> { de, para, status, membros }
+  meuCodigo: null,           // meu código de amigo
   atividade: new Map(),      // canais de TODOS os meus servidores: sid -> Map(cid -> canal), pra saber o que é novo
 
   /* pessoas */

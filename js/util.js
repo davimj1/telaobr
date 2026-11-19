@@ -103,6 +103,24 @@ export function confirmar(texto, { titulo = "Tem certeza?", botao = "Confirmar",
   });
 }
 
+/**
+ * Chama `acao(valor)` quando a pessoa clica num botão da janela (valor = value do botão).
+ * Responde no clique, e não no evento "close" (que o Chrome atrasa em aba de fundo).
+ * Enter num campo de texto aperta o botão "ok" (e não o primeiro botão, que costuma ser Cancelar).
+ */
+export function aoEscolher(dlg, acao) {
+  const form = dlg.querySelector("form");
+  form.addEventListener("submit", e => acao(e.submitter?.value ?? ""));
+  for (const campo of form.querySelectorAll("input[type=text], input:not([type])")) {
+    campo.addEventListener("keydown", e => {
+      const ok = form.querySelector('button[value="ok"]');
+      if (e.key !== "Enter" || e.isComposing || !ok) return;
+      e.preventDefault();
+      form.requestSubmit(ok);
+    });
+  }
+}
+
 /** Copia um texto; se o navegador não deixar, mostra pra pessoa copiar na mão. */
 export async function copiar(texto, mensagem = "Copiado!") {
   try { await navigator.clipboard.writeText(texto); aviso(mensagem); }

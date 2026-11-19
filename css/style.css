@@ -575,6 +575,20 @@ body.modo-dm .membros { display: none; }
 .dm-vazio { padding: 1rem .6rem; color: var(--texto-suave); font-size: .88rem; line-height: 1.5; }
 .dms--contatos { max-height: 50vh; padding: 0; }
 
+/* botão "Amigos" no topo das mensagens diretas */
+.dms--topo { flex: none; padding-bottom: 0; }
+.dm--amigos { font-weight: 600; }
+.dm--amigos .selo-numero { margin-left: auto; }
+.dm__icone { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--fundo-3); font-size: 1.05rem; }
+.dms__titulo {
+  margin: .6rem 1rem .1rem;
+  color: var(--texto-suave);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
 /* bolinha de status no avatar */
 .avatar--online, .avatar--afk, .avatar--offline { position: relative; }
 .avatar--online::after, .avatar--afk::after, .avatar--offline::after {
@@ -661,6 +675,77 @@ body.modo-dm .membros { display: none; }
 .painel-chat,
 .painel-voz { display: flex; flex: 1; flex-direction: column; min-height: 0; }
 .painel-chat--soltar { outline: 3px dashed var(--laranja); outline-offset: -8px; }
+
+/* --- tela de amigos --- */
+.painel-amigos { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.topo--amigos { gap: .8rem; }
+.topo__titulo--fixo { flex: none; }
+.amigos__abas { display: flex; gap: .3rem; min-width: 0; overflow-x: auto; }
+.amigos__aba {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .3rem .7rem;
+  border: none;
+  border-radius: var(--raio-pequeno);
+  background: none;
+  color: var(--texto-suave);
+  font: inherit;
+  font-size: .9rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.amigos__aba:hover { background: var(--fundo-3); color: var(--texto); }
+.amigos__aba--ativa { background: var(--fundo-4); color: var(--texto); }
+.amigos__aba--adicionar { background: var(--verde); color: #fff; font-weight: 600; }
+.amigos__aba--adicionar:hover { background: var(--verde); filter: brightness(1.1); color: #fff; }
+.amigos__aba--adicionar.amigos__aba--ativa { background: none; color: var(--verde); }
+
+.amigos { flex: 1; min-height: 0; padding: 1rem 1.2rem; overflow-y: auto; }
+.amigos__titulo {
+  margin: .4rem 0 .5rem;
+  color: var(--texto-suave);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.amigos__vazio { margin-top: 3rem; color: var(--texto-suave); text-align: center; line-height: 1.5; }
+.amigo {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .6rem .5rem;
+  border-top: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+}
+.amigo:hover { background: var(--fundo-3); }
+.amigo .avatar { width: 38px; height: 38px; }
+.amigo__textos { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.amigo__textos strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.amigo__sub { color: var(--texto-suave); font-size: .8rem; }
+.amigo__acao { width: 38px; height: 38px; border-radius: 50%; background: var(--fundo-1); font-size: 1rem; }
+.amigo__acao--sim:hover { background: var(--verde); color: #fff; }
+.amigo__acao--nao:hover { background: var(--vermelho); color: #fff; }
+
+.adicionar { display: flex; flex-direction: column; gap: .6rem; max-width: 620px; padding: 1.4rem 1.2rem; overflow-y: auto; }
+.adicionar__titulo { margin-top: .6rem; font-size: 1rem; }
+.adicionar__texto { color: var(--texto-suave); font-size: .88rem; line-height: 1.45; }
+.adicionar__texto--pequeno { font-size: .8rem; }
+.adicionar__form { display: flex; gap: .5rem; padding: .4rem; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--fundo-1); }
+.adicionar__form:focus-within { border-color: var(--laranja); }
+.adicionar__campo { flex: 1; border: none; background: none; font-size: 1.05rem; letter-spacing: .12em; text-transform: uppercase; }
+.adicionar__campo:focus { outline: none; }
+.adicionar__meu { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.adicionar__codigo {
+  padding: .45rem .9rem;
+  border: 1px dashed var(--laranja);
+  border-radius: var(--raio-pequeno);
+  color: var(--laranja-claro);
+  font-family: ui-monospace, monospace;
+  font-size: 1.35rem;
+  letter-spacing: .18em;
+}
 
 /* --- fixadas --- */
 .fixadas {
@@ -1305,7 +1390,8 @@ body.modo-dm .mini-live { right: 1rem; }
   .trilho, .lateral, .principal, .membros,
   body.sem-membros .membros, body.modo-dm .membros { display: none; }
 
-  .app[data-aba="canais"] { grid-template-areas: "trilho lateral" "abas abas"; }
+  /* "body" na frente: tem que ganhar das regras de body.modo-dm / body.sem-membros */
+  body .app[data-aba="canais"] { grid-template-areas: "trilho lateral" "abas abas"; }
   .app[data-aba="canais"] .trilho  { display: flex; }
   .app[data-aba="canais"] .lateral { display: flex; }
   .app[data-aba="conversa"] .principal { display: flex; grid-area: conteudo; }
@@ -1352,6 +1438,11 @@ body.modo-dm .mini-live { right: 1rem; }
   .compositor__enviar { padding: .5rem .7rem; }
   .resposta { margin: 0 .6rem; }
   .digitando { margin: 0 .7rem; }
+  .topo--amigos { flex-wrap: nowrap; }
+  .topo__titulo--fixo { display: none; }
+  .amigos { padding: .7rem; }
+  .adicionar { padding: 1rem .8rem; }
+  .adicionar__form { flex-direction: column; }
 
   .campo, .compositor__campo { font-size: 16px; } /* evita o zoom automático do iPhone */
 

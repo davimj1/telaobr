@@ -75,6 +75,14 @@
           <h2 class="lateral__titulo">Mensagens diretas</h2>
           <button id="btNovaConversa" class="botao-icone" type="button" title="Nova conversa" aria-label="Nova conversa">+</button>
         </header>
+        <div class="dms dms--topo">
+          <button id="btAmigos" class="dm dm--amigos" type="button">
+            <span class="dm__icone" aria-hidden="true">👥</span>
+            <span class="dm__nome">Amigos</span>
+            <span id="contadorAmigosLateral" class="selo-numero" hidden></span>
+          </button>
+        </div>
+        <h3 class="dms__titulo">Conversas</h3>
         <ul id="listaDms" class="dms"></ul>
       </section>
 
@@ -125,6 +133,40 @@
         <img class="vazio__logo" src="img/logo.svg" alt="" width="72" height="72">
         <h2 id="vazioTitulo" class="vazio__titulo"></h2>
         <p id="vazioTexto" class="vazio__texto"></p>
+      </section>
+
+      <!-- Amigos (tela inicial das mensagens diretas) -->
+      <section id="painelAmigos" class="painel-amigos" aria-labelledby="tituloAmigos" hidden>
+        <header class="topo topo--amigos">
+          <h2 id="tituloAmigos" class="topo__titulo topo__titulo--fixo">👥 Amigos</h2>
+          <div class="amigos__abas" role="tablist">
+            <button class="amigos__aba" type="button" role="tab" data-aba="online">Online</button>
+            <button class="amigos__aba" type="button" role="tab" data-aba="todos">Todos</button>
+            <button class="amigos__aba" type="button" role="tab" data-aba="pendentes">Pendentes <span id="contadorPendentes" class="selo-numero" hidden></span></button>
+            <button class="amigos__aba amigos__aba--adicionar" type="button" role="tab" data-aba="adicionar">Adicionar</button>
+          </div>
+        </header>
+
+        <ul id="listaAmigos" class="amigos"></ul>
+
+        <section id="adicionarAmigo" class="adicionar" hidden>
+          <h3 class="adicionar__titulo">Adicionar amigo</h3>
+          <p class="adicionar__texto">Digite o código de amigo da pessoa. Ela recebe o pedido e, quando aceitar, vocês podem conversar no privado.</p>
+          <form id="formAdicionarAmigo" class="adicionar__form" autocomplete="off">
+            <label for="campoCodigoAmigo" class="so-leitor">Código do amigo</label>
+            <input id="campoCodigoAmigo" class="campo adicionar__campo" type="text" maxlength="12" placeholder="Ex.: K7P2QX" spellcheck="false" autocapitalize="characters">
+            <button class="botao botao--primario" type="submit">Enviar pedido</button>
+          </form>
+
+          <h3 class="adicionar__titulo">Seu código</h3>
+          <p class="adicionar__texto">Mande pros seus amigos. Ou mande o link: quem abrir já envia o pedido pra você.</p>
+          <div class="adicionar__meu">
+            <strong id="meuCodigo" class="adicionar__codigo">…</strong>
+            <button id="btCopiarCodigo" class="botao botao--pequeno" type="button">Copiar código</button>
+            <button id="btCopiarLinkAmigo" class="botao botao--pequeno" type="button">Copiar link de amizade</button>
+          </div>
+          <p class="adicionar__texto adicionar__texto--pequeno">Também dá pra adicionar clicando em alguém na lista de membros de um servidor.</p>
+        </section>
       </section>
 
       <!-- Canal de texto ou DM -->

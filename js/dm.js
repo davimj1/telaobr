@@ -3,12 +3,13 @@
  */
 import { db, doc, setDoc, collection, onSnapshot, query, where } from "./firebase.js";
 import { S, parar } from "./estado.js";
-import { $, criarAvatar, dataCurta, idConversa, guardar } from "./util.js";
+import { $, aviso, confirmar, criarAvatar, dataCurta, idConversa, guardar } from "./util.js";
 import { ehCelular } from "./compat.js";
 import { perfil, statusDe, ouvirPerfis } from "./perfis.js";
 import { abrirChat, fecharChat } from "./chat.js";
 import { renderTudo, irPara } from "./ui.js";
 import { avisar, atualizarTitulo, definirContadorDms, estouVendo } from "./avisos.js";
+import { ehAmigo, amigos, pedidosRecebidos, situacao } from "./amigos.js";
 
 /** Guarda "quando li cada conversa" separado por conta (duas contas no mesmo PC não se misturam). */
 const chaveLidas = () => "telao-dms-lidas:" + S.user.uid;
@@ -71,7 +72,16 @@ function avisarSeNova(id, c) {
 export async function abrirDm(uid) {
   const id = idConversa(S.user.uid, uid);
   const membros = [S.user.uid, uid].sort();
-  await setDoc(doc(db, "dms", id), { membros }, { merge: true }).catch(() => {});
+  // conversa nova só com amigo (a regra do banco também exige); conversa antiga abre pra ler
+  if (!S.dms.has(id) && !ehAmigo(uid)) {
+    const { pedirAmizade } = await import("./amigos.js");
+    const s = situacao(uid);
+    if (s === "enviado") return aviso(`Pedido de amizade já enviado pra ${perfil(uid).nome}. Quando aceitar, vocês podem conversar.`);
+    if (await confirmar(`Mensagem direta é só entre amigos. Quer mandar um pedido de amizade pra ${perfil(uid).nome}?`,
+      { titulo: "Vocês ainda não são amigos", botao: s === "recebido" ? "Aceitar amizade" : "Enviar pedido", perigo: false })) pedirAmizade(uid);
+    return;
+  }
+  if (ehAmigo(uid)) await setDoc(doc(db, "dms", id), { membros }, { merge: true }).catch(() => {});
   S.modo = "dm";
   S.dmAtual = id;
   abrirChat({
@@ -82,6 +92,7 @@ export async function abrirDm(uid) {
     digitando: () => collection(db, "dms", id, "digitando"),
     aoEnviar: m => setDoc(doc(db, "dms", id), { membros, ultima: { uid: m.uid, texto: (m.texto || "📎 anexo").slice(0, 80), ts: m.ts } }, { merge: true }),
     aoVer: () => marcarLida(id),
+    bloqueio: () => (ehAmigo(uid) ? "" : "Vocês não são amigos agora. Adicione de novo pra conversar."),
   });
   if (ehCelular()) irPara("conversa");
   renderTudo();
@@ -94,7 +105,7 @@ export function abrirModoDm() {
   fecharChat();
   S.dmAtual = null;
   if (ehCelular()) irPara("canais");
-  renderTudo();
+  renderTudo(); // sem conversa aberta, o meio mostra a tela de Amigos
 }
 
 /* ------------------------------------------------------------ desenho */
@@ -130,19 +141,19 @@ export function renderListaDms() {
   if (!itens.length) {
     const vazio = document.createElement("li");
     vazio.className = "dm-vazio";
-    vazio.textContent = "Nenhuma conversa ainda. Clique em + ou em alguém na lista de membros.";
+    vazio.textContent = "Nenhuma conversa ainda. Clique em + pra conversar com um amigo.";
     itens.push(vazio);
   }
   ul.replaceChildren(...itens);
-  $("btDms").classList.toggle("trilho__item--alerta", [...S.dms].some(([id, c]) => naoLida(id, c) && id !== S.dmAtual));
+  $("btDms").classList.toggle("trilho__item--alerta",
+    [...S.dms].some(([id, c]) => naoLida(id, c) && id !== S.dmAtual) || pedidosRecebidos().length > 0);
+  $("btAmigos").classList.toggle("dm--atual", S.modo === "dm" && !S.dmAtual);
 }
 
-/** Janela "Nova conversa": pessoas que estão em algum servidor comigo. */
+/** Janela "Nova conversa": meus amigos. */
 function abrirNovaConversa() {
-  const conhecidos = new Set([...S.servidores.values()].flatMap(s => s.membros || []));
-  conhecidos.delete(S.user.uid);
   const ul = $("listaContatos");
-  const itens = [...conhecidos].sort((a, b) => perfil(a).nome.localeCompare(perfil(b).nome)).map(uid => {
+  const itens = amigos().map(uid => {
     const li = document.createElement("li");
     const bt = document.createElement("button");
     bt.type = "button";
@@ -155,13 +166,14 @@ function abrirNovaConversa() {
     li.append(bt);
     return li;
   });
-  if (!itens.length) ul.innerHTML = `<li class="dm-vazio">Entre num servidor com seus amigos pra poder conversar com eles aqui.</li>`;
+  if (!itens.length) ul.innerHTML = `<li class="dm-vazio">Você ainda não tem amigos no Telão. Vá em 👥 Amigos → Adicionar e mande seu código pra galera.</li>`;
   else ul.replaceChildren(...itens);
   $("dlgNovaConversa").showModal();
 }
 
 export function iniciarDms() {
-  definirContadorDms(() => (S.user ? dmsNaoLidas() : 0));
+  // o número no título conta DMs não lidas + pedidos de amizade esperando resposta
+  definirContadorDms(() => (S.user ? dmsNaoLidas() + pedidosRecebidos().length : 0));
   $("btDms").addEventListener("click", abrirModoDm);
   $("btNovaConversa").addEventListener("click", abrirNovaConversa);
 }

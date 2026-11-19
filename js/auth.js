@@ -6,7 +6,7 @@ import {
   getRedirectResult, onAuthStateChanged, signOut,
 } from "./firebase.js";
 import { S, parar } from "./estado.js";
-import { $, esc } from "./util.js";
+import { $, esc, aoEscolher } from "./util.js";
 import { NAVEGADOR_DE_APP } from "./compat.js";
 import { sairDaCall } from "./call.js";
 import { pararServidores } from "./servidores.js";
@@ -14,6 +14,7 @@ import { fecharChat } from "./chat.js";
 import { pararPerfis, definirAfk } from "./perfis.js";
 import { pararAtividade, renderOpcoesAvisos } from "./avisos.js";
 import { renderPonte } from "./ponte.js";
+import { pararAmigos } from "./amigos.js";
 
 /** Traduz os erros mais comuns do login pra algo que dá pra resolver. */
 function explicarErro(erro) {
@@ -54,6 +55,7 @@ export async function sairDaConta() {
   parar("dms");
   pararPerfis();
   pararAtividade();
+  pararAmigos();
   await signOut(auth);
   location.reload();
 }
@@ -76,8 +78,7 @@ export function iniciarLogin({ aoEntrar }) {
   getRedirectResult(auth).catch(erro => ($("erroLogin").textContent = explicarErro(erro)));
   $("btGoogle").addEventListener("click", entrarComGoogle);
   $("btUsuario").addEventListener("click", abrirConta);
-  $("dlgConta").addEventListener("close", () => {
-    const v = $("dlgConta").returnValue;
+  aoEscolher($("dlgConta"), v => {
     if (v === "sair") sairDaConta();
     if (v === "afk") { S.afkManual = !S.afk; definirAfk(!S.afk); }
   });

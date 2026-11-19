@@ -7,7 +7,7 @@ import {
 } from "./firebase.js";
 import { S, parar, servidorAtual } from "./estado.js";
 import { LIMITES, MODELOS, PERMISSOES_PADRAO } from "./config.js";
-import { $, cor, iniciais, aviso, copiar, confirmar, guardar, imagemSegura } from "./util.js";
+import { $, cor, iniciais, aviso, copiar, confirmar, guardar, imagemSegura, aoEscolher } from "./util.js";
 import { ehCelular } from "./compat.js";
 import { ouvirCanais, pararCanais, criarCanaisDoModelo } from "./canais.js";
 import { ouvirPessoas, pararPessoas, sairDaCall } from "./call.js";
@@ -184,8 +184,8 @@ export function iniciarServidores() {
     $("campoNomeServidor").value = "";
     $("dlgServidor").showModal();
   });
-  $("dlgServidor").addEventListener("close", () => {
-    if ($("dlgServidor").returnValue === "ok") criarServidor($("campoNomeServidor").value, sel.value);
+  aoEscolher($("dlgServidor"), valor => {
+    if (valor === "ok") criarServidor($("campoNomeServidor").value, sel.value);
   });
   $("btConvite").addEventListener("click", () =>
     copiar(location.href.split("#")[0] + "#convite-" + S.atual, "Convite copiado! Mande pros amigos."));

@@ -8,6 +8,8 @@ import { renderCanais } from "./canais.js";
 import { renderListaDms } from "./dm.js";
 import { renderMembros } from "./membros.js";
 import { renderPalco } from "./palco.js";
+import { renderAmigos } from "./amigos.js";
+import { atualizarCompositor } from "./chat.js";
 
 /* ------------------------------------------------------------ desenho geral */
 
@@ -48,9 +50,13 @@ function renderConteudo() {
   const mostrarChat = !!S.chat && (S.modo === "dm" || canal?.tipo === "texto");
   const mostrarVoz = canal?.tipo === "voz";
 
+  const mostrarAmigos = S.modo === "dm" && !mostrarChat;
   $("painelChat").hidden = !mostrarChat;
   $("painelVoz").hidden = !mostrarVoz;
-  $("painelVazio").hidden = mostrarChat || mostrarVoz;
+  $("painelAmigos").hidden = !mostrarAmigos;
+  $("painelVazio").hidden = mostrarChat || mostrarVoz || mostrarAmigos;
+  if (mostrarAmigos) renderAmigos();
+  if (mostrarChat) atualizarCompositor();
   $("btMembros").hidden = S.modo !== "servidor";
   document.body.classList.toggle("modo-dm", S.modo === "dm");
 

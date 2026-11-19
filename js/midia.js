@@ -4,7 +4,7 @@
  */
 import { S, salvarConfig } from "./estado.js";
 import { QUALIDADES, QUALIDADES_VOZ } from "./config.js";
-import { $, aviso } from "./util.js";
+import { $, aviso, aoEscolher } from "./util.js";
 import { PODE_TRANSMITIR } from "./compat.js";
 import { aplicarEmTodos } from "./rtc.js";
 import { atualizarMeuStatus } from "./call.js";
@@ -265,7 +265,7 @@ export function iniciarMidia() {
   botoes("config-voz").forEach(b => b.addEventListener("click", abrirConfigVoz));
   sel.addEventListener("change", mudarQualidade);
   $("btTeclaPtt").addEventListener("click", capturarTecla);
-  $("dlgConfigVoz").addEventListener("close", () => { if ($("dlgConfigVoz").returnValue === "ok") salvarConfigVoz(); });
+  aoEscolher($("dlgConfigVoz"), v => { if (v === "ok") salvarConfigVoz(); });
   document.addEventListener("keydown", teclaApertada);
   document.addEventListener("keyup", teclaApertada);
   window.addEventListener("blur", () => { if (S.apertandoPtt) { S.apertandoPtt = false; aplicarEstadoMic(); } });

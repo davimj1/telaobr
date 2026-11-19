@@ -9,7 +9,7 @@
  *
  * Ao adicionar um arquivo novo no site, ponha ele em ARQUIVOS e aumente a VERSAO.
  */
-const VERSAO = "telao-v2.2";
+const VERSAO = "telao-v2.3";
 
 const ARQUIVOS = [
   "./",
@@ -23,7 +23,7 @@ const ARQUIVOS = [
   ...[
     "main", "config", "firebase", "estado", "util", "compat", "ui", "auth", "perfis",
     "permissoes", "servidores", "canais", "chat", "emoji", "membros", "dm", "call",
-    "rtc", "midia", "palco", "fala", "avisos", "ponte", "app",
+    "rtc", "midia", "palco", "fala", "avisos", "ponte", "app", "amigos",
   ].map(nome => `js/${nome}.js`),
 ];
 

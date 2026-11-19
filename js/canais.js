@@ -5,7 +5,7 @@
 import { addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, srvCol, srvDoc } from "./firebase.js";
 import { S, parar, servidorAtual } from "./estado.js";
 import { LIMITES, MODELOS } from "./config.js";
-import { $, aviso, confirmar, criarAvatar, doModelo, menuFlutuante } from "./util.js";
+import { $, aviso, confirmar, criarAvatar, doModelo, menuFlutuante, aoEscolher } from "./util.js";
 import { ehCelular } from "./compat.js";
 import { pode } from "./permissoes.js";
 import { perfil } from "./perfis.js";
@@ -207,5 +207,5 @@ function criarItemCanal(cid, canal) {
 }
 
 export function iniciarCanais() {
-  $("dlgCanal").addEventListener("close", () => { if ($("dlgCanal").returnValue === "ok") salvarCanal(); });
+  aoEscolher($("dlgCanal"), v => { if (v === "ok") salvarCanal(); });
 }

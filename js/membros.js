@@ -10,6 +10,7 @@ import { deleteField } from "./firebase.js";
 import { cargoDe, meuCargo, pode, possoAgirSobre, cargosQuePossoDar, permissoesDoCargo } from "./permissoes.js";
 import { perfil, statusDe } from "./perfis.js";
 import { abrirDm } from "./dm.js";
+import { situacao, pedirAmizade, aceitar } from "./amigos.js";
 import { excluirServidor, sairDoServidor } from "./servidores.js";
 
 /* ------------------------------------------------------------ lista de membros */
@@ -74,7 +75,13 @@ function criarItemMembro(uid, srv) {
 function abrirMenuMembro(ancora, uid) {
   const itens = [];
   const nome = perfil(uid).nome;
-  if (uid !== S.user.uid) itens.push({ rotulo: "💬 Mensagem direta", acao: () => abrirDm(uid) });
+  if (uid !== S.user.uid) {
+    const s = situacao(uid);
+    if (s === "amigo") itens.push({ rotulo: "💬 Mensagem direta", acao: () => abrirDm(uid) });
+    else if (s === "recebido") itens.push({ rotulo: "✓ Aceitar amizade", acao: () => aceitar(uid) });
+    else if (s === "enviado") itens.push({ rotulo: "⏳ Pedido de amizade enviado", acao: () => {} });
+    else itens.push({ rotulo: "➕ Adicionar amigo", acao: () => pedirAmizade(uid) });
+  }
   if (possoAgirSobre(uid) && pode("gerenciarCargos")) {
     for (const cargo of cargosQuePossoDar())
       if (cargo !== cargoDe(uid)) itens.push({ rotulo: `Tornar ${CARGOS[cargo].rotulo}`, acao: () => mudarCargo(uid, cargo) });

@@ -1,10 +1,11 @@
 # Telão — Documento de Requisitos
 
-**Versão:** 2.2 · **Autor:** Davi (wasmorf) · **Data:** 18/11/2026
+**Versão:** 2.3 · **Autor:** Davi (wasmorf) · **Data:** 19/11/2026
 
 | Versão | Data | O que mudou |
 |---|---|---|
 | 1.0 | 14/11/2026 | Servidores, chat único, call única, câmera e transmissão de tela. |
+| 2.3 | 19/11/2026 | Amigos: código de amigo, link de amizade, pedidos, tela de amigos; mensagem direta só entre amigos. |
 | 2.2 | 18/11/2026 | Instalar como app (PWA): ícone, janela própria, atualização automática, notificações no celular; foto de capa do servidor. |
 | 2.1 | 17/11/2026 | Avisos (não lidas, menções, sons, notificações, título da aba), live no cantinho e janela flutuante, TURN, editar mensagem, "digitando", busca e confirmações no visual do Telão. |
 | 2.0 | 16/11/2026 | Canais de texto e voz, modelos de servidor, chat completo (responder, reagir, fixar, imagens e arquivos, menções), cargos e permissões, expulsar/banir, mensagens diretas, status AFK e configurações de voz (apertar pra falar, qualidade, microfone, volume por pessoa). |
@@ -82,7 +83,7 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 ### Mensagens diretas
 | ID | Requisito | Prioridade |
 |---|---|---|
-| RF25 | O usuário deve poder conversar em privado com qualquer pessoa que esteja num servidor com ele. | Alta |
+| RF25 | O usuário deve poder conversar em privado com seus amigos (versão 2.3: antes era com qualquer pessoa de um servidor em comum). | Alta |
 | RF26 | O sistema deve avisar quando houver mensagem direta não lida. | Média |
 
 ### Voz, câmera e tela
@@ -96,6 +97,14 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 | RF32 | O usuário deve poder ajustar o **volume de cada pessoa**. | Média |
 | RF33 | O usuário deve poder ligar a câmera e **transmitir a tela com som**, escolhendo 720p30, 1080p30 ou 1080p60. | Alta |
 | RF34 | O sistema deve mostrar quem está falando, mudo, com câmera e ao vivo. | Média |
+
+### Amigos (versão 2.3)
+| ID | Requisito | Prioridade |
+|---|---|---|
+| RF50 | Cada usuário deve ter um código de amigo único, curto e fácil de ditar (sem letras parecidas como 0/O e 1/I). | Alta |
+| RF51 | O usuário deve poder enviar pedido de amizade pelo código, por um link de amizade ou pela lista de membros de um servidor. | Alta |
+| RF52 | O usuário deve poder aceitar, recusar e cancelar pedidos, e desfazer amizades; pedidos novos geram aviso (som, notificação, contador). | Alta |
+| RF53 | A tela de Amigos deve ter as abas Online, Todos, Pendentes e Adicionar. | Média |
 
 ### App (versão 2.2)
 | ID | Requisito | Prioridade |
@@ -175,6 +184,8 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 - **RN10** — Só o autor edita uma mensagem, e só o texto. Mensagens de sistema não são editáveis.
 - **RN11** — "Está digitando" some depois de 6,5 segundos sem novo sinal.
 - **RN12** — Ao abrir o site num aparelho novo, as mensagens que já existiam contam como lidas.
+- **RN13** — Mensagem direta só pode ser enviada entre amigos (amizade com status "aceita"). Desfeita a amizade, a conversa antiga fica só pra leitura.
+- **RN14** — Só quem recebeu o pedido pode aceitar; qualquer um dos dois pode recusar, cancelar ou desfazer. Um código de amigo, depois de criado, não pode ser trocado nem tomado por outra pessoa.
 
 ## 6. Casos de uso
 
@@ -336,6 +347,16 @@ classDiagram
     tipo
     dados
   }
+  class Amizade {
+    id = uidA_uidB
+    de
+    para
+    status: pendente | aceita
+  }
+  class CodigoAmigo {
+    codigo
+    uid
+  }
   class Conversa {
     id = uidA_uidB
     membros[2]
@@ -349,6 +370,9 @@ classDiagram
   Presenca "0..*" --> "1" Canal : está em
   Servidor "1" *-- "0..*" Sinal
   Usuario "2" -- "0..*" Conversa
+  Usuario "2" -- "0..*" Amizade
+  Usuario "1" -- "1" CodigoAmigo
+  Amizade "1" -- "0..1" Conversa : libera
   Conversa "1" *-- "0..*" Mensagem
 ```
 
@@ -423,3 +447,4 @@ flowchart TD
 | RNF10 | `js/util.js` (`confirmar`) |
 | RF46 | `js/membros.js` (configurações), `js/servidores.js` (exibição) |
 | RF47–RF49 | `manifest.webmanifest`, `sw.js`, `js/app.js` |
+| RF50–RF53, RN13, RN14 | `js/amigos.js`, `js/dm.js`, `firestore.rules` (`codigos`, `amizades`, `amigos()`) |
