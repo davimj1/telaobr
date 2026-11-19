@@ -13,6 +13,7 @@ import { S, salvarConfig } from "./estado.js";
 import { $, guardar } from "./util.js";
 import { contextoAudio, ehCelular } from "./compat.js";
 import { abaAtual, renderTudo } from "./ui.js";
+import { mostrarNotificacao } from "./app.js";
 
 /* ------------------------------------------------------------ o que já li */
 
@@ -185,10 +186,9 @@ export const notificacoesAtivas = () =>
 export function avisar({ titulo, texto, som, tag, aoClicar }) {
   if (som) tocar(som);
   if (!notificacoesAtivas() || (document.visibilityState === "visible" && document.hasFocus())) return;
-  try {
-    const n = new Notification(titulo, { body: texto, icon: "img/logo.png", tag, renotify: !!tag });
-    n.onclick = () => { window.focus(); aoClicar?.(); n.close(); };
-  } catch { /* Android sem app instalado não deixa criar notificação assim: fica só o som */ }
+  Promise.resolve()
+    .then(() => mostrarNotificacao(titulo, { texto, tag, aoClicar }))
+    .catch(() => { /* navegador recusou: fica só o som */ });
 }
 
 async function pedirPermissao() {

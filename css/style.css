@@ -282,6 +282,14 @@ body.modo-dm .membros { display: none; }
 .trilho__item:hover,
 .trilho__item--atual { border-radius: 14px; }
 
+/* botão "instalar app" no fim da barra de servidores */
+.trilho__item--instalar { margin-top: auto; background: var(--fundo-3); color: var(--verde); }
+.trilho__item--instalar:hover { background: var(--verde); color: #fff; }
+.trilho__item--instalar .icone { width: 22px; height: 22px; }
+
+.passos { display: flex; flex-direction: column; gap: .55rem; margin: 0; padding-left: 1.4rem; line-height: 1.45; list-style: decimal; }
+.passos li::marker { color: var(--laranja); font-weight: 700; }
+
 /* servidor com foto de capa: a foto preenche a bolinha */
 .trilho__item--foto { padding: 0; background: var(--fundo-3); }
 .trilho__foto {

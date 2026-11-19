@@ -4,12 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Telão: servidores com canais de texto e voz, chat, call, câmera e transmissão de tela para você e seus amigos.">
-  <meta name="theme-color" content="#ff7a1a">
+  <meta name="theme-color" content="#090807">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Telão">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.webmanifest">
   <title>Telão</title>
   <link rel="icon" type="image/svg+xml" href="img/logo.svg">
-  <link rel="apple-touch-icon" href="img/logo.png">
+  <link rel="apple-touch-icon" href="img/icones/apple-180.png">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -43,6 +46,9 @@
       <hr class="trilho__separador">
       <ul id="listaServidores" class="trilho__lista"></ul>
       <button id="btNovoServidor" class="trilho__item trilho__item--novo" type="button" title="Criar servidor" aria-label="Criar servidor">+</button>
+      <button id="btInstalarApp" class="trilho__item trilho__item--instalar" type="button" title="Instalar o Telão como app" aria-label="Instalar o Telão como app" hidden>
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+      </button>
     </nav>
 
     <!-- Coluna lateral: canais do servidor OU lista de mensagens diretas -->
@@ -359,6 +365,11 @@
         <label class="opcao"><input id="chkSons" type="checkbox"> Sons (mensagem, entrar e sair da call)</label>
         <button id="btNotificacoes" class="botao botao--pequeno" type="button">Ativar notificações</button>
       </fieldset>
+      <fieldset class="grupo">
+        <legend class="janela__rotulo">App</legend>
+        <p id="appEstado" class="janela__texto"></p>
+        <button id="btInstalarConta" class="botao botao--primario botao--pequeno" type="button" hidden>Instalar o Telão</button>
+      </fieldset>
       <fieldset id="grupoPonte" class="grupo" hidden>
         <legend class="janela__rotulo">Ponte de conexão (TURN)</legend>
         <p id="ponteEstado" class="janela__texto"></p>
@@ -377,6 +388,22 @@
         <button class="botao" value="fechar">Fechar</button>
         <button id="btAfk" class="botao" value="afk">Ficar AFK</button>
         <button class="botao botao--perigo" value="sair">Sair da conta</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlgInstalarIos" class="janela">
+    <form method="dialog" class="janela__form">
+      <h3 class="janela__titulo">Instalar no iPhone / iPad</h3>
+      <ol class="passos">
+        <li>Abra o Telão no <strong>Safari</strong>.</li>
+        <li>Toque em <strong>Compartilhar</strong> (o quadrado com a setinha pra cima).</li>
+        <li>Role e toque em <strong>Adicionar à Tela de Início</strong>.</li>
+        <li>Toque em <strong>Adicionar</strong>. O ícone do Telão aparece junto com seus apps.</li>
+      </ol>
+      <p class="janela__texto janela__texto--pequeno">Abrindo pelo ícone, o Telão também consegue mostrar notificações (iOS 16.4 ou mais novo). Na primeira vez, entre com o Google de novo dentro do app.</p>
+      <div class="janela__botoes">
+        <button class="botao botao--primario" value="ok">Entendi</button>
       </div>
     </form>
   </dialog>

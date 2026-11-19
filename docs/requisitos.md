@@ -1,10 +1,11 @@
 # Telão — Documento de Requisitos
 
-**Versão:** 2.1 · **Autor:** Davi (wasmorf) · **Data:** 17/11/2026
+**Versão:** 2.2 · **Autor:** Davi (wasmorf) · **Data:** 18/11/2026
 
 | Versão | Data | O que mudou |
 |---|---|---|
 | 1.0 | 14/11/2026 | Servidores, chat único, call única, câmera e transmissão de tela. |
+| 2.2 | 18/11/2026 | Instalar como app (PWA): ícone, janela própria, atualização automática, notificações no celular; foto de capa do servidor. |
 | 2.1 | 17/11/2026 | Avisos (não lidas, menções, sons, notificações, título da aba), live no cantinho e janela flutuante, TURN, editar mensagem, "digitando", busca e confirmações no visual do Telão. |
 | 2.0 | 16/11/2026 | Canais de texto e voz, modelos de servidor, chat completo (responder, reagir, fixar, imagens e arquivos, menções), cargos e permissões, expulsar/banir, mensagens diretas, status AFK e configurações de voz (apertar pra falar, qualidade, microfone, volume por pessoa). |
 
@@ -95,6 +96,13 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 | RF32 | O usuário deve poder ajustar o **volume de cada pessoa**. | Média |
 | RF33 | O usuário deve poder ligar a câmera e **transmitir a tela com som**, escolhendo 720p30, 1080p30 ou 1080p60. | Alta |
 | RF34 | O sistema deve mostrar quem está falando, mudo, com câmera e ao vivo. | Média |
+
+### App (versão 2.2)
+| ID | Requisito | Prioridade |
+|---|---|---|
+| RF47 | O Telão deve poder ser instalado como app no PC (Chrome/Edge), Android e iPhone, abrindo numa janela própria com ícone. | Alta |
+| RF48 | O app deve se atualizar sozinho quando uma versão nova for publicada e abrir mesmo sem internet (mostrando a tela inicial). | Média |
+| RF49 | As notificações devem funcionar também no Android e no app instalado do iPhone. | Média |
 
 ### Personalização (versão 2.1)
 | ID | Requisito | Prioridade |
@@ -414,3 +422,4 @@ flowchart TD
 | RF43–RF45, RN10, RN11 | `js/chat.js` |
 | RNF10 | `js/util.js` (`confirmar`) |
 | RF46 | `js/membros.js` (configurações), `js/servidores.js` (exibição) |
+| RF47–RF49 | `manifest.webmanifest`, `sw.js`, `js/app.js` |

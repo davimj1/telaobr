@@ -23,6 +23,7 @@
  *   fala.js         indicador de quem está falando
  *   avisos.js       não lidas, menções, sons, notificações e título da aba
  *   ponte.js        configurar a ponte de conexão (TURN) pelo site
+ *   app.js          instalar como app (PWA) e notificações pelo service worker
  */
 import { iniciarCompat } from "./compat.js";
 import { iniciarAbas, renderTudo } from "./ui.js";
@@ -38,8 +39,10 @@ import { iniciarMidia } from "./midia.js";
 import { iniciarAvisos } from "./avisos.js";
 import { iniciarMiniLive } from "./palco.js";
 import { iniciarPonte } from "./ponte.js";
+import { iniciarApp } from "./app.js";
 
 iniciarCompat();
+iniciarApp();
 iniciarAbas();
 iniciarServidores();
 iniciarCanais();
