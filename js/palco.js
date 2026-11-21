@@ -3,7 +3,7 @@
  */
 import { S } from "./estado.js";
 import { $, aviso, criarAvatar, doModelo } from "./util.js";
-import { PODE_TRANSMITIR, telaCheia, ehCelular } from "./compat.js";
+import { PODE_TRANSMITIR, telaCheia, ehCelular, ligarVideo } from "./compat.js";
 import { pessoasDoMeuCanal, entrarNaCall } from "./call.js";
 import { abaAtual, irParaCall } from "./ui.js";
 
@@ -56,12 +56,29 @@ export function renderMiniLive() {
     video.srcObject = null;
     return;
   }
-  if (video.srcObject !== live.stream) video.srcObject = live.stream;
+  if (video.srcObject !== live.stream) ligarVideo(video, live.stream);
   $("miniNome").textContent = live.p.nome + (lives.length > 1 ? ` +${lives.length - 1}` : "");
   mini.hidden = vendoPalco() || miniFechada === live.stream.id;
 }
 
+/**
+ * Vigia: vídeo preto (sem imagem) mas com imagem chegando → religa.
+ * Cobre o caso do iPhone em que o aviso de "a imagem começou" se perde.
+ */
+function vigiarVideosPretos() {
+  for (const video of document.querySelectorAll("#palco video, #miniVideo")) {
+    const stream = video.srcObject;
+    if (!stream || video.videoWidth > 0) continue;
+    const chegando = stream.getVideoTracks().some(t => t.readyState === "live" && !t.muted);
+    if (!chegando) continue;
+    video.srcObject = null;
+    video.srcObject = stream;
+    video.play().catch(() => {});
+  }
+}
+
 export function iniciarMiniLive() {
+  setInterval(vigiarVideosPretos, 2000);
   const video = $("miniVideo");
   $("btMiniJanela").hidden = !PODE_JANELA;
   $("btMiniJanela").addEventListener("click", () => janelaFlutuante(video));
@@ -150,7 +167,7 @@ function criarTileTela({ uid, p, stream }) {
   const meu = uid === S.user.uid;
   const tile = doModelo("modeloTela");
   const video = tile.querySelector("video");
-  video.srcObject = stream;
+  ligarVideo(video, stream);
   video.addEventListener("dblclick", () => telaCheia(tile));
   tile.querySelector(".tile__rotulo").textContent = p.nome + (meu ? " (sua tela)" : "");
   const acoes = tile.querySelector(".tile__acoes");
@@ -187,9 +204,7 @@ function criarTilePessoa(uid, p) {
 
   if (cam) {
     const video = document.createElement("video");
-    video.autoplay = true; video.muted = true; video.playsInline = true;
-    video.setAttribute("playsinline", "");
-    video.srcObject = cam;
+    ligarVideo(video, cam);
     video.classList.toggle("tile__video--espelho", meu);
     video.addEventListener("dblclick", () => telaCheia(tile));
     tile.prepend(video);

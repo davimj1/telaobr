@@ -36,6 +36,40 @@ export function destravarAudio() {
   for (const par of S.pares.values()) for (const saida of par.saidas) if (saida.srcObject?.getAudioTracks().length) saida.play().catch(() => {});
 }
 
+/* ------------------------------------------------------------ vídeo (câmera e telas) */
+
+/** É iPhone/iPad? (lá todo navegador usa o motor do Safari, inclusive o Chrome) */
+export const EH_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+/**
+ * Liga um vídeo recebido (câmera ou tela) num elemento <video>.
+ * No iPhone, se o vídeo for ligado ANTES da imagem começar a chegar (ex.: o amigo liga a
+ * transmissão depois que você entrou), ele fica preto pra sempre. Por isso, quando a imagem
+ * começa a chegar ("unmute"), religamos o vídeo e damos play de novo.
+ */
+export function ligarVideo(video, stream) {
+  video.autoplay = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  const tocar = () => { if (video.isConnected || video.id) video.play().catch(() => {}); };
+  if (video.srcObject !== stream) video.srcObject = stream;
+  if (!video.dataset.ligado) {
+    video.dataset.ligado = "1";
+    video.addEventListener("loadedmetadata", tocar);
+  }
+  for (const faixa of stream.getVideoTracks()) {
+    faixa.addEventListener("unmute", () => {
+      if (video.srcObject !== stream) return; // esse vídeo já mostra outra coisa
+      video.srcObject = null;
+      video.srcObject = stream;
+      tocar();
+    });
+  }
+  requestAnimationFrame(tocar);
+}
+
 /* ------------------------------------------------------------ onde o som sai (fone, caixa…) */
 
 /** O navegador deixa escolher a saída de áudio? (Chrome e Edge sim; Safari não) */

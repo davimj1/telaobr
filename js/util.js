@@ -61,12 +61,12 @@ export function imagemIniciais(nome) {
 
 /** Mostra uma mensagem rápida embaixo da tela. */
 let timerAviso;
-export function aviso(texto) {
+export function aviso(texto, duracao = 2800) {
   const el = $("aviso");
   el.textContent = texto;
   el.classList.add("visivel");
   clearTimeout(timerAviso);
-  timerAviso = setTimeout(() => el.classList.remove("visivel"), 2800);
+  timerAviso = setTimeout(() => el.classList.remove("visivel"), duracao);
 }
 
 /**

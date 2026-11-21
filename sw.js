@@ -9,7 +9,7 @@
  *
  * Ao adicionar um arquivo novo no site, ponha ele em ARQUIVOS e aumente a VERSAO.
  */
-const VERSAO = "telao-v2.6";
+const VERSAO = "telao-v2.7";
 
 const ARQUIVOS = [
   "./",

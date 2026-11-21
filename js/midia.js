@@ -5,7 +5,7 @@
 import { S, salvarConfig } from "./estado.js";
 import { QUALIDADES, QUALIDADES_VOZ } from "./config.js";
 import { $, aviso, aoEscolher } from "./util.js";
-import { PODE_TRANSMITIR, PODE_ESCOLHER_SAIDA, direcionarTudo } from "./compat.js";
+import { PODE_TRANSMITIR, PODE_ESCOLHER_SAIDA, direcionarTudo, EH_IOS } from "./compat.js";
 import { aplicarEmTodos, ajustarSaidas } from "./rtc.js";
 import { atualizarMeuStatus } from "./call.js";
 import { pode } from "./permissoes.js";
@@ -49,13 +49,43 @@ function aplicarEstadoMic() {
 /** Pede o microfone. silencioso = não mostra erro (entra só ouvindo). */
 export async function ligarMicrofone({ silencioso = false } = {}) {
   try {
-    S.mic = await navigator.mediaDevices.getUserMedia(opcoesMicrofone());
+    S.mic = await pedirMicrofone();
     detectarFala(S.user.uid, S.mic);
     aplicarEstadoMic();
-  } catch {
+  } catch (erro) {
     S.mic = null;
-    aviso(silencioso ? "Sem microfone: você entra só ouvindo." : "Não deu acesso ao microfone.");
+    console.warn("Microfone:", erro);
+    aviso(explicarErroMicrofone(erro, silencioso), 9000);
   }
+}
+
+/**
+ * Pede o microfone com as opções escolhidas. Se o aparelho não aceitar alguma opção
+ * (acontece no iPhone e em microfones antigos), tenta de novo do jeito mais simples.
+ */
+async function pedirMicrofone() {
+  try {
+    return await navigator.mediaDevices.getUserMedia(opcoesMicrofone());
+  } catch (erro) {
+    if (erro.name === "NotAllowedError" || erro.name === "SecurityError") throw erro; // bloqueado: não adianta insistir
+    return navigator.mediaDevices.getUserMedia({ audio: true });
+  }
+}
+
+/** Explica em português o que impediu o microfone e como resolver. */
+function explicarErroMicrofone(erro, silencioso) {
+  const inicio = silencioso ? "Você entrou só ouvindo: " : "";
+  if (!navigator.mediaDevices?.getUserMedia)
+    return inicio + "este navegador não deixa usar microfone. Use Safari ou Chrome atualizados.";
+  if (erro.name === "NotAllowedError" || erro.name === "SecurityError")
+    return inicio + (EH_IOS
+      ? "o iPhone bloqueou o microfone. Abra Ajustes do iPhone → Chrome (ou Safari) → ative Microfone. Depois recarregue o Telão e toque em Ligar mic."
+      : "o microfone está bloqueado pro site. Clique no cadeado/ícone ao lado do endereço, permita o Microfone e recarregue.");
+  if (erro.name === "NotFoundError")
+    return inicio + "nenhum microfone encontrado. Conecte um e tente de novo.";
+  if (erro.name === "NotReadableError" || erro.name === "AbortError")
+    return inicio + "o microfone está sendo usado por outro app (ligação, WhatsApp, Discord…). Feche ele e toque em Ligar mic.";
+  return inicio + "não deu pra ligar o microfone (" + erro.name + "). Toque em Ligar mic pra tentar de novo.";
 }
 
 /** Troca o microfone (depois de mudar a configuração) sem sair da call. */
