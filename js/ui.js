@@ -1,6 +1,7 @@
 /**
  * ui.js — Redesenha a tela inteira e controla as abas do celular.
  */
+import { marcarFala } from "./fala.js";
 import { S, servidorAtual } from "./estado.js";
 import { $, criarAvatar } from "./util.js";
 import { renderTrilho, renderTopoServidor } from "./servidores.js";
@@ -74,7 +75,7 @@ function renderConteudo() {
 /** Painel embaixo da lateral: eu, meu status e botões de mic/áudio/config. */
 function renderPainelUsuario() {
   const av = criarAvatar(S.nome, S.foto);
-  av.dataset.fala = S.user.uid;
+  marcarFala(av, S.user.uid);
   $("meuAvatar").replaceChildren(av);
   $("meuNome").textContent = S.nome;
   $("meuStatus").textContent = S.afk ? "💤 AFK" : "● Online";

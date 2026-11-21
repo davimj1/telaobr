@@ -78,6 +78,8 @@ export const PODE_ESCOLHER_SAIDA = typeof HTMLMediaElement !== "undefined" && "s
 /** Manda o som de um tocador pra saída escolhida nas configurações de voz. */
 export function direcionarSaida(elemento) {
   if (!PODE_ESCOLHER_SAIDA) return;
+  // só troca se for diferente: trocar a saída reinicia o áudio (e pode travar o "verde")
+  if ((elemento.sinkId || "") === (S.config.saidaId || "")) return;
   elemento.setSinkId(S.config.saidaId || "").catch(() => {
     // o fone foi desconectado, por exemplo: volta pro padrão do sistema
     elemento.setSinkId("").catch(() => {});
@@ -87,7 +89,9 @@ export function direcionarSaida(elemento) {
 /** Aplica a saída escolhida em tudo que toca som: vozes, som das lives e os toques de aviso. */
 export function direcionarTudo() {
   for (const par of S.pares.values()) par.saidas.forEach(direcionarSaida);
-  contexto?.setSinkId?.(S.config.saidaId || "").catch?.(() => {});
+  const alvo = S.config.saidaId || "";
+  const atual = typeof contexto?.sinkId === "string" ? contexto.sinkId : "";
+  if (contexto?.setSinkId && atual !== alvo) contexto.setSinkId(alvo).catch(() => {});
 }
 
 /* ------------------------------------------------------------ tela acesa */

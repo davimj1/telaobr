@@ -14,7 +14,7 @@ import { ICE, TURN, QUALIDADES, QUALIDADES_VOZ, LIMITES } from "./config.js";
 import { $, aviso } from "./util.js";
 import { direcionarSaida } from "./compat.js";
 import { renderPalco } from "./palco.js";
-import { detectarFala } from "./fala.js";
+import { detectarFalaRemota } from "./fala.js";
 
 /* ------------------------------------------------------------ sinalização */
 
@@ -198,7 +198,7 @@ function receberFaixa(uid, par, evento) {
   else {
     trocar(par.voz, evento.track);
     tocarSaidas(par);
-    detectarFala(uid, new MediaStream([evento.track]));
+    detectarFalaRemota(uid, evento.receiver);
   }
   renderPalco();
 }
@@ -222,18 +222,39 @@ export function tocarSaidas(par) {
   }
 }
 
+/** Dá play de novo no som de todo mundo (ex.: depois de ligar o microfone, o iPhone pausa). */
+export function tocarTodos() {
+  for (const p of S.pares.values()) tocarSaidas(p);
+}
+
+/**
+ * O navegador bloqueou o som (ele exige um toque antes de tocar áudio).
+ * Mostra uma faixa fixa "Toque aqui pra ouvir" — e qualquer toque/tecla também libera.
+ */
 let esperandoToque = false;
 function pedirToqueParaOuvir() {
   if (esperandoToque) return;
   esperandoToque = true;
-  aviso("🔇 O navegador bloqueou o som. Clique (ou toque) em qualquer lugar pra ouvir a call.");
+  $("faixaSom").hidden = false;
   const liberar = () => {
+    if (!esperandoToque) return;
     esperandoToque = false;
-    for (const p of S.pares.values()) tocarSaidas(p);
+    $("faixaSom").hidden = true;
+    tocarTodos();
   };
+  $("btLiberarSom").addEventListener("click", liberar, { once: true });
   window.addEventListener("pointerdown", liberar, { once: true });
   window.addEventListener("keydown", liberar, { once: true });
 }
+
+/** Vigia: som de alguém pausado (o iPhone pausa ao ligar mic/câmera, trocar de app…) → play de novo. */
+setInterval(() => {
+  if (!S.call || esperandoToque) return;
+  for (const par of S.pares.values())
+    for (const saida of par.saidas)
+      if (saida.paused && saida.srcObject?.getAudioTracks().some(t => t.readyState === "live"))
+        saida.play().catch(erro => { if (erro.name === "NotAllowedError") pedirToqueParaOuvir(); });
+}, 2000);
 
 /** Eu começo a conversa com essa pessoa. */
 export async function iniciarOferta(uid, sessao) {

@@ -1,6 +1,7 @@
 /**
  * palco.js — Canal de voz aberto: telas ao vivo em cima e as pessoas embaixo.
  */
+import { marcarFala } from "./fala.js";
 import { S } from "./estado.js";
 import { $, aviso, criarAvatar, doModelo } from "./util.js";
 import { PODE_TRANSMITIR, telaCheia, ehCelular, ligarVideo } from "./compat.js";
@@ -198,7 +199,7 @@ function estadoConexao(uid) {
 function criarTilePessoa(uid, p) {
   const meu = uid === S.user.uid;
   const tile = doModelo("modeloTile");
-  tile.dataset.fala = uid;
+  marcarFala(tile, uid);
   tile.classList.toggle("tile--afk", !!p.afk);
   const cam = p.cam ? streamDe(uid, "cam") : null;
 
@@ -210,7 +211,7 @@ function criarTilePessoa(uid, p) {
     tile.prepend(video);
   } else {
     const avatar = criarAvatar(p.nome, p.foto, { classe: "avatar avatar--grande" });
-    avatar.dataset.fala = uid;
+    marcarFala(avatar, uid);
     tile.prepend(avatar);
   }
   const icones = [p.afk && "💤", !p.mic && "🔇"].filter(Boolean).join(" ");

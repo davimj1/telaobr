@@ -546,6 +546,8 @@ body.modo-dm .membros { display: none; }
   font-size: .86rem;
 }
 .faixa__texto { flex: 1; }
+.faixa--som { width: 100%; border: none; background: var(--vermelho); font: inherit; font-size: .95rem; text-align: left; cursor: pointer; animation: pulsar 1.6s ease-in-out infinite; }
+@keyframes pulsar { 50% { filter: brightness(1.15); } }
 .faixa .botao-icone { color: #fff; }
 
 /* --- mensagens diretas --- */

@@ -6,7 +6,7 @@ import { S, salvarConfig } from "./estado.js";
 import { QUALIDADES, QUALIDADES_VOZ } from "./config.js";
 import { $, aviso, aoEscolher } from "./util.js";
 import { PODE_TRANSMITIR, PODE_ESCOLHER_SAIDA, direcionarTudo, EH_IOS } from "./compat.js";
-import { aplicarEmTodos, ajustarSaidas } from "./rtc.js";
+import { aplicarEmTodos, ajustarSaidas, tocarTodos } from "./rtc.js";
 import { atualizarMeuStatus } from "./call.js";
 import { pode } from "./permissoes.js";
 import { renderPalco } from "./palco.js";
@@ -52,6 +52,7 @@ export async function ligarMicrofone({ silencioso = false } = {}) {
     S.mic = await pedirMicrofone();
     detectarFala(S.user.uid, S.mic);
     aplicarEstadoMic();
+    tocarTodos(); // no iPhone, ligar o microfone pode pausar o som dos outros
   } catch (erro) {
     S.mic = null;
     console.warn("Microfone:", erro);
@@ -127,6 +128,7 @@ async function alternarCamera() {
   if (S.cam) return desligarCamera();
   try {
     S.cam = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } } });
+    tocarTodos();
   } catch { return aviso("Não deu acesso à câmera."); }
   S.cam.getVideoTracks()[0].onended = () => desligarCamera();
   atualizarMeuStatus({ cam: true });

@@ -2,6 +2,7 @@
  * canais.js — Canais de texto e de voz de um servidor.
  * Canais de voz mostram quem está dentro; clicar num deles entra na call.
  */
+import { marcarFala } from "./fala.js";
 import { addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, srvCol, srvDoc } from "./firebase.js";
 import { S, parar, servidorAtual } from "./estado.js";
 import { LIMITES, MODELOS } from "./config.js";
@@ -192,7 +193,7 @@ function criarItemCanal(cid, canal) {
       const item = document.createElement("li");
       item.className = "canal__pessoa";
       const av = criarAvatar(p.nome, p.foto || perfil(uid).foto);
-      av.dataset.fala = uid;
+      marcarFala(av, uid);
       const nome = document.createElement("span");
       nome.className = "canal__pessoa-nome";
       nome.textContent = p.nome;
