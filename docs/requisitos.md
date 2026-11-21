@@ -1,10 +1,11 @@
 # Telão — Documento de Requisitos
 
-**Versão:** 2.3 · **Autor:** Davi (wasmorf) · **Data:** 19/11/2026
+**Versão:** 2.4 · **Autor:** Davi (wasmorf) · **Data:** 21/11/2026
 
 | Versão | Data | O que mudou |
 |---|---|---|
 | 1.0 | 14/11/2026 | Servidores, chat único, call única, câmera e transmissão de tela. |
+| 2.4 | 21/11/2026 | Correção: call não conectava entre aparelhos com relógios diferentes (sem voz e sem tela). Apelido e foto próprios, escolha da saída de áudio, medidor de microfone, estado da ligação, voz e som da tela em tocadores separados. |
 | 2.3 | 19/11/2026 | Amigos: código de amigo, link de amizade, pedidos, tela de amigos; mensagem direta só entre amigos. |
 | 2.2 | 18/11/2026 | Instalar como app (PWA): ícone, janela própria, atualização automática, notificações no celular; foto de capa do servidor. |
 | 2.1 | 17/11/2026 | Avisos (não lidas, menções, sons, notificações, título da aba), live no cantinho e janela flutuante, TURN, editar mensagem, "digitando", busca e confirmações no visual do Telão. |
@@ -98,6 +99,13 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 | RF33 | O usuário deve poder ligar a câmera e **transmitir a tela com som**, escolhendo 720p30, 1080p30 ou 1080p60. | Alta |
 | RF34 | O sistema deve mostrar quem está falando, mudo, com câmera e ao vivo. | Média |
 
+### Perfil e áudio (versão 2.4)
+| ID | Requisito | Prioridade |
+|---|---|---|
+| RF54 | O usuário deve poder trocar o apelido e a foto de perfil dentro do Telão; a mudança aparece pra todos, inclusive nas mensagens antigas. | Alta |
+| RF55 | O usuário deve poder escolher a saída de áudio (fone, caixa de som) e testá-la. | Média |
+| RF56 | O sistema deve mostrar um medidor do microfone e o estado da ligação com cada pessoa da call ("Conectando…", "Sem conexão"). | Média |
+
 ### Amigos (versão 2.3)
 | ID | Requisito | Prioridade |
 |---|---|---|
@@ -185,6 +193,7 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 - **RN11** — "Está digitando" some depois de 6,5 segundos sem novo sinal.
 - **RN12** — Ao abrir o site num aparelho novo, as mensagens que já existiam contam como lidas.
 - **RN13** — Mensagem direta só pode ser enviada entre amigos (amizade com status "aceita"). Desfeita a amizade, a conversa antiga fica só pra leitura.
+- **RN15** — O sistema nunca compara o horário escrito por outro aparelho com o relógio local pra decidir se alguém está online ou na call: usa a hora local em que o sinal de vida chegou (relógios de aparelhos diferentes podem estar minutos fora).
 - **RN14** — Só quem recebeu o pedido pode aceitar; qualquer um dos dois pode recusar, cancelar ou desfazer. Um código de amigo, depois de criado, não pode ser trocado nem tomado por outra pessoa.
 
 ## 6. Casos de uso
@@ -447,4 +456,7 @@ flowchart TD
 | RNF10 | `js/util.js` (`confirmar`) |
 | RF46 | `js/membros.js` (configurações), `js/servidores.js` (exibição) |
 | RF47–RF49 | `manifest.webmanifest`, `sw.js`, `js/app.js` |
+| RF54 | `js/perfis.js` (`carregarMeuPerfil`, `salvarMeuPerfil`) |
+| RF55 | `js/midia.js` (saída), `js/compat.js` (`direcionarSaida`) |
+| RF56 | `js/midia.js` (medidor), `js/palco.js` (`estadoConexao`) |
 | RF50–RF53, RN13, RN14 | `js/amigos.js`, `js/dm.js`, `firestore.rules` (`codigos`, `amizades`, `amigos()`) |

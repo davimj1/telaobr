@@ -25,6 +25,7 @@ let contexto = null;
 
 /** Um AudioContext só para o app todo (usado no indicador de fala). */
 export function contextoAudio() {
+  if (!contexto) setTimeout(direcionarTudo, 0); // primeira vez: já manda os toques pra saída escolhida
   contexto ??= new (window.AudioContext || window.webkitAudioContext)();
   return contexto;
 }
@@ -32,7 +33,27 @@ export function contextoAudio() {
 /** iPhone/Android bloqueiam som automático: a cada toque, tentamos tocar de novo. */
 export function destravarAudio() {
   contexto?.resume?.();
-  for (const par of S.pares.values()) par.saida.play().catch(() => {});
+  for (const par of S.pares.values()) for (const saida of par.saidas) if (saida.srcObject?.getAudioTracks().length) saida.play().catch(() => {});
+}
+
+/* ------------------------------------------------------------ onde o som sai (fone, caixa…) */
+
+/** O navegador deixa escolher a saída de áudio? (Chrome e Edge sim; Safari não) */
+export const PODE_ESCOLHER_SAIDA = typeof HTMLMediaElement !== "undefined" && "setSinkId" in HTMLMediaElement.prototype;
+
+/** Manda o som de um tocador pra saída escolhida nas configurações de voz. */
+export function direcionarSaida(elemento) {
+  if (!PODE_ESCOLHER_SAIDA) return;
+  elemento.setSinkId(S.config.saidaId || "").catch(() => {
+    // o fone foi desconectado, por exemplo: volta pro padrão do sistema
+    elemento.setSinkId("").catch(() => {});
+  });
+}
+
+/** Aplica a saída escolhida em tudo que toca som: vozes, som das lives e os toques de aviso. */
+export function direcionarTudo() {
+  for (const par of S.pares.values()) par.saidas.forEach(direcionarSaida);
+  contexto?.setSinkId?.(S.config.saidaId || "").catch?.(() => {});
 }
 
 /* ------------------------------------------------------------ tela acesa */

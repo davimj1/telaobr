@@ -11,7 +11,7 @@ import { NAVEGADOR_DE_APP } from "./compat.js";
 import { sairDaCall } from "./call.js";
 import { pararServidores } from "./servidores.js";
 import { fecharChat } from "./chat.js";
-import { pararPerfis, definirAfk } from "./perfis.js";
+import { pararPerfis, definirAfk, renderEdicaoPerfil, iniciarEdicaoPerfil } from "./perfis.js";
 import { pararAtividade, renderOpcoesAvisos } from "./avisos.js";
 import { renderPonte } from "./ponte.js";
 import { pararAmigos } from "./amigos.js";
@@ -65,6 +65,7 @@ function abrirConta() {
   $("btAfk").textContent = S.afk ? "Voltar pra Online" : "Ficar AFK";
   renderOpcoesAvisos();
   renderPonte();
+  renderEdicaoPerfil();
   $("dlgConta").showModal();
 }
 
@@ -78,6 +79,7 @@ export function iniciarLogin({ aoEntrar }) {
   getRedirectResult(auth).catch(erro => ($("erroLogin").textContent = explicarErro(erro)));
   $("btGoogle").addEventListener("click", entrarComGoogle);
   $("btUsuario").addEventListener("click", abrirConta);
+  iniciarEdicaoPerfil();
   aoEscolher($("dlgConta"), v => {
     if (v === "sair") sairDaConta();
     if (v === "afk") { S.afkManual = !S.afk; definirAfk(!S.afk); }

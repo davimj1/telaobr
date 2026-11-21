@@ -5,8 +5,8 @@
 import { S, salvarConfig } from "./estado.js";
 import { QUALIDADES, QUALIDADES_VOZ } from "./config.js";
 import { $, aviso, aoEscolher } from "./util.js";
-import { PODE_TRANSMITIR } from "./compat.js";
-import { aplicarEmTodos } from "./rtc.js";
+import { PODE_TRANSMITIR, PODE_ESCOLHER_SAIDA, direcionarTudo } from "./compat.js";
+import { aplicarEmTodos, ajustarSaidas } from "./rtc.js";
 import { atualizarMeuStatus } from "./call.js";
 import { pode } from "./permissoes.js";
 import { renderPalco } from "./palco.js";
@@ -154,7 +154,7 @@ async function mudarQualidade() {
 
 function alternarSurdo() {
   S.surdo = !S.surdo;
-  for (const par of S.pares.values()) par.saida.muted = S.surdo;
+  for (const par of S.pares.values()) ajustarSaidas(par);
   atualizarBotoes();
 }
 
@@ -219,11 +219,102 @@ async function abrirConfigVoz() {
       .forEach((d, i) => sel.add(new Option(d.label || `Microfone ${i + 1}`, d.deviceId)));
   } catch {}
   sel.value = S.config.micId;
+  await preencherSaidas();
   $("dlgConfigVoz").showModal();
+  medirMicrofone();
+}
+
+/* ------------------------------------------------------------ medidor do microfone */
+
+let medicao = null;
+
+/** Barra que mexe com a sua voz (pra conferir se o microfone está captando). */
+async function medirMicrofone() {
+  pararMedicao();
+  const texto = $("textoMedidor");
+  let stream = S.mic, temporario = false;
+  try {
+    if (!stream) { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); temporario = true; }
+  } catch {
+    texto.textContent = "⚠ Sem acesso ao microfone. Libere no cadeado da barra de endereço.";
+    return;
+  }
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const analisador = ctx.createAnalyser();
+  analisador.fftSize = 512;
+  ctx.createMediaStreamSource(stream).connect(analisador);
+  const dados = new Uint8Array(analisador.fftSize);
+  let maximo = 0;
+  const desenhar = () => {
+    analisador.getByteTimeDomainData(dados);
+    let pico = 0;
+    for (const v of dados) pico = Math.max(pico, Math.abs(v - 128));
+    const nivel = Math.min(1, pico / 64);
+    maximo = Math.max(maximo, nivel);
+    $("medidorMic").style.width = Math.round(nivel * 100) + "%";
+    const mudo = S.mic && !micEstaAberto();
+    texto.textContent = mudo ? "🔇 Seu microfone está mutado (ou apertar-pra-falar sem a tecla apertada)."
+      : maximo > 0.08 ? "✅ Seu microfone está captando."
+      : "Fale alguma coisa: a barra tem que mexer.";
+  };
+  const timer = setInterval(desenhar, 60);
+  medicao = () => {
+    clearInterval(timer);
+    ctx.close().catch(() => {});
+    if (temporario) stream.getTracks().forEach(t => t.stop());
+  };
+}
+
+function pararMedicao() {
+  medicao?.();
+  medicao = null;
+}
+
+/* ------------------------------------------------------------ saída de áudio */
+
+async function preencherSaidas() {
+  const sel = $("selSaida");
+  sel.replaceChildren(new Option("Padrão do sistema", ""));
+  let saidas = [];
+  try {
+    saidas = (await navigator.mediaDevices.enumerateDevices())
+      .filter(d => d.kind === "audiooutput" && d.deviceId && d.deviceId !== "default" && d.deviceId !== "communications");
+  } catch {}
+  saidas.forEach((d, i) => sel.add(new Option(d.label || `Saída ${i + 1}`, d.deviceId)));
+  // se o aparelho escolhido antes não está conectado agora, mostra "Padrão"
+  sel.value = saidas.some(d => d.deviceId === S.config.saidaId) ? S.config.saidaId : "";
+  const pode = PODE_ESCOLHER_SAIDA && saidas.length > 0;
+  sel.disabled = !pode;
+  $("btTestarSaida").disabled = !PODE_ESCOLHER_SAIDA;
+  $("avisoSaida").hidden = pode;
+}
+
+/** Toca um "plim" na saída selecionada (sem precisar salvar antes). */
+async function testarSaida() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if ($("selSaida").value && ctx.setSinkId) await ctx.setSinkId($("selSaida").value);
+    for (const [freq, inicio] of [[660, 0], [880, 0.18], [1320, 0.36]]) {
+      const osc = ctx.createOscillator();
+      const vol = ctx.createGain();
+      const t = ctx.currentTime + inicio;
+      osc.frequency.value = freq;
+      vol.gain.setValueAtTime(0.0001, t);
+      vol.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+      vol.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      osc.connect(vol).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.32);
+    }
+    setTimeout(() => ctx.close().catch(() => {}), 1200);
+  } catch {
+    aviso("Não deu pra tocar o teste nessa saída.");
+  }
 }
 
 function salvarConfigVoz() {
   const antes = JSON.stringify([S.config.qualidadeVoz, S.config.micId]);
+  if (!$("selSaida").disabled) S.config.saidaId = $("selSaida").value;
   S.config.modoMic = $("modoMicPtt").checked ? "ptt" : "sempre";
   S.config.teclaPtt = $("btTeclaPtt").dataset.codigo || "KeyV";
   S.config.qualidadeVoz = $("selQualidadeVoz").value;
@@ -232,6 +323,7 @@ function salvarConfigVoz() {
   if (antes !== JSON.stringify([S.config.qualidadeVoz, S.config.micId])) reiniciarMicrofone();
   else aplicarEstadoMic();
   aplicarEmTodos();
+  direcionarTudo();
   atualizarBotoes();
   aviso("Configurações de voz salvas.");
 }
@@ -265,7 +357,9 @@ export function iniciarMidia() {
   botoes("config-voz").forEach(b => b.addEventListener("click", abrirConfigVoz));
   sel.addEventListener("change", mudarQualidade);
   $("btTeclaPtt").addEventListener("click", capturarTecla);
-  aoEscolher($("dlgConfigVoz"), v => { if (v === "ok") salvarConfigVoz(); });
+  aoEscolher($("dlgConfigVoz"), v => { pararMedicao(); if (v === "ok") salvarConfigVoz(); });
+  $("dlgConfigVoz").addEventListener("cancel", pararMedicao);
+  $("btTestarSaida").addEventListener("click", testarSaida);
   document.addEventListener("keydown", teclaApertada);
   document.addEventListener("keyup", teclaApertada);
   window.addEventListener("blur", () => { if (S.apertandoPtt) { S.apertandoPtt = false; aplicarEstadoMic(); } });

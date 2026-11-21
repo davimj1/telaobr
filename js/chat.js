@@ -8,7 +8,7 @@ import { S, parar } from "./estado.js";
 import { LIMITES, REACOES_RAPIDAS } from "./config.js";
 import {
   $, cor, criarAvatar, dataCurta, aviso, doModelo, textoRico, comprimirImagem, lerArquivo,
-  tamanhoLegivel, menuFlutuante, confirmar,
+  tamanhoLegivel, menuFlutuante, confirmar, fotoSegura,
 } from "./util.js";
 import { ehCelular } from "./compat.js";
 import { pode, cargoDe } from "./permissoes.js";
@@ -146,10 +146,13 @@ function criarMensagem(m, junta, nomes) {
   const meMencionou = /@todos\b/i.test(m.texto || "") || (m.texto || "").toLowerCase().includes("@" + meuPrimeiroNome);
   li.classList.toggle("msg--mencao", meMencionou && m.uid !== S.user.uid);
 
-  li.prepend(criarAvatar(m.nome, m.foto, { classe: "avatar msg__avatar" }));
+  // nome e foto ATUAIS da pessoa (se ela trocou o apelido, as mensagens antigas acompanham)
+  const atual = m.uid === S.user.uid ? { nome: S.nome, foto: S.foto } : S.perfis.get(m.uid);
+  const nomeAutor = atual?.nome || m.nome;
+  li.prepend(criarAvatar(nomeAutor, atual?.foto || m.foto, { classe: "avatar msg__avatar" }));
   const autor = li.querySelector(".msg__autor");
-  autor.textContent = m.nome;
-  autor.style.color = cor(m.nome);
+  autor.textContent = nomeAutor;
+  autor.style.color = cor(nomeAutor);
   if (ehCanal()) {
     const cargo = cargoDe(m.uid);
     const selo = li.querySelector(".msg__cargo");
@@ -360,8 +363,8 @@ function ouvirDigitando() {
     for (const mudanca of snap.docChanges()) {
       const uid = mudanca.doc.id;
       const d = mudanca.doc.data();
-      // ignora sinais antigos (alguém que fechou a aba digitando); 60 s de folga pro relógio de cada PC
-      if (mudanca.type === "removed" || uid === S.user.uid || Math.abs(Date.now() - d.ts) > 60_000) digitandoAgora.delete(uid);
+      // ignora sinais abandonados (alguém que fechou a aba digitando); 10 min de folga porque o relógio de cada aparelho pode estar diferente
+      if (mudanca.type === "removed" || uid === S.user.uid || Math.abs(Date.now() - d.ts) > 10 * 60_000) digitandoAgora.delete(uid);
       else digitandoAgora.set(uid, { nome: d.nome, chegou: Date.now() });
     }
     renderDigitando();
@@ -538,7 +541,8 @@ async function enviar(extra = {}) {
   const texto = campo.value.trim().slice(0, LIMITES.tamanhoMensagem);
   if (!texto && !extra.imagem && !extra.arquivo) return;
   pararDeDigitar();
-  const mensagem = { uid: S.user.uid, nome: S.nome, foto: S.foto, texto, ts: Date.now(), reacoes: {}, fixada: false, ...extra };
+  // foto embutida (escolhida no Telão) não vai em cada mensagem: ela vem do perfil da pessoa
+  const mensagem = { uid: S.user.uid, nome: S.nome, foto: fotoSegura(S.foto), texto, ts: Date.now(), reacoes: {}, fixada: false, ...extra };
   if (S.respondendo) mensagem.respondendo = S.respondendo;
   campo.value = "";
   ajustarAltura();

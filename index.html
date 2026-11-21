@@ -377,6 +377,17 @@
       <select id="selQualidadeVoz" class="campo campo--select"></select>
       <label for="selMicrofone" class="janela__rotulo">Microfone</label>
       <select id="selMicrofone" class="campo campo--select"></select>
+      <label for="selSaida" class="janela__rotulo">Onde ouvir (saída de áudio)</label>
+      <div class="linha">
+        <select id="selSaida" class="campo campo--select"></select>
+        <button id="btTestarSaida" class="botao botao--pequeno" type="button">Testar</button>
+      </div>
+      <p id="avisoSaida" class="janela__texto janela__texto--pequeno" hidden>Este navegador não deixa escolher a saída pelo site: troque nas configurações de som do sistema (ou use Chrome/Edge).</p>
+      <p class="janela__rotulo">Teste do microfone</p>
+      <div class="medidor" aria-label="Volume do seu microfone">
+        <div id="medidorMic" class="medidor__barra"></div>
+      </div>
+      <p id="textoMedidor" class="janela__texto janela__texto--pequeno">Fale alguma coisa: a barra tem que mexer.</p>
       <div class="janela__botoes">
         <button class="botao" value="cancelar">Cancelar</button>
         <button class="botao botao--primario" value="ok">Salvar</button>
@@ -402,6 +413,23 @@
     <form method="dialog" class="janela__form">
       <h3 class="janela__titulo">Sua conta</h3>
       <p id="infoConta" class="janela__texto"></p>
+      <fieldset class="grupo">
+        <legend class="janela__rotulo">Perfil</legend>
+        <div class="perfil-edicao">
+          <span id="previewFotoPerfil" class="perfil-edicao__foto"></span>
+          <div class="perfil-edicao__botoes">
+            <button id="btTrocarFoto" class="botao botao--pequeno" type="button">Trocar foto</button>
+            <button id="btFotoGoogle" class="botao-texto" type="button">Voltar pra foto do Google</button>
+            <input id="entradaFotoPerfil" type="file" accept="image/*" hidden>
+          </div>
+        </div>
+        <label for="campoApelido" class="janela__rotulo">Apelido</label>
+        <div class="linha">
+          <input id="campoApelido" class="campo" type="text" maxlength="40" autocomplete="nickname" spellcheck="false">
+          <button id="btSalvarApelido" class="botao botao--pequeno" type="button">Salvar apelido</button>
+        </div>
+        <p class="janela__texto janela__texto--pequeno">É assim que seus amigos te veem no Telão. Deixe vazio pra usar o nome da conta Google.</p>
+      </fieldset>
       <fieldset class="grupo">
         <legend class="janela__rotulo">Avisos</legend>
         <label class="opcao"><input id="chkSons" type="checkbox"> Sons (mensagem, entrar e sair da call)</label>

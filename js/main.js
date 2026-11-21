@@ -29,7 +29,7 @@
 import { iniciarCompat } from "./compat.js";
 import { iniciarAbas, renderTudo } from "./ui.js";
 import { iniciarLogin } from "./auth.js";
-import { iniciarMeuStatus } from "./perfis.js";
+import { iniciarMeuStatus, carregarMeuPerfil } from "./perfis.js";
 import { iniciarServidores, ouvirServidores, tratarConvite } from "./servidores.js";
 import { iniciarCanais } from "./canais.js";
 import { iniciarChat } from "./chat.js";
@@ -60,6 +60,7 @@ iniciarAmigos();
 
 iniciarLogin({
   async aoEntrar() {
+    await carregarMeuPerfil(); // apelido e foto escolhidos no Telão
     iniciarMeuStatus();
     ouvirServidores();
     ouvirDms();

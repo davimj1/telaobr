@@ -46,7 +46,7 @@ export function criarAvatar(nome, foto, { id = "", classe = "avatar" } = {}) {
   const el = document.createElement("div");
   el.className = classe;
   if (id) el.id = id;
-  const f = fotoSegura(foto);
+  const f = imagemSegura(foto);
   if (f) el.style.backgroundImage = `url("${f.replace(/"/g, "%22")}")`;
   else { el.style.backgroundColor = cor(nome); el.textContent = iniciais(nome); }
   el.setAttribute("aria-hidden", "true");
@@ -121,6 +121,29 @@ export function aoEscolher(dlg, acao) {
   }
 }
 
+/* ------------------------------------------------------------ "ainda está aí?" sem depender do relógio dos outros */
+
+// O relógio de cada PC/celular pode estar alguns segundos ou minutos diferente.
+// Por isso não comparamos o horário que o OUTRO aparelho escreveu com o NOSSO relógio:
+// anotamos a hora (no nosso relógio) em que o sinal dele mudou pela última vez.
+const chegadas = new Map(); // chave -> { visto, chegou }
+const TOLERANCIA_RELOGIO = 10 * 60_000; // aceita relógios até 10 min diferentes
+
+/** Anota que chegou um sinal de vida ("visto") de alguém. */
+export function marcarChegada(chave, visto) {
+  const antes = chegadas.get(chave);
+  if (antes && antes.visto === visto) return;
+  // primeira vez: se o horário dele for muito antigo até pra um relógio errado, é registro abandonado
+  const abandonado = !antes && Math.abs(Date.now() - (visto || 0)) > TOLERANCIA_RELOGIO;
+  chegadas.set(chave, { visto, chegou: abandonado ? -Infinity : Date.now() });
+}
+
+/** Quanto tempo (no MEU relógio) faz que essa pessoa não manda sinal de vida. */
+export function tempoSemSinal(chave) {
+  const r = chegadas.get(chave);
+  return r ? Date.now() - r.chegou : Infinity;
+}
+
 /** Copia um texto; se o navegador não deixar, mostra pra pessoa copiar na mão. */
 export async function copiar(texto, mensagem = "Copiado!") {
   try { await navigator.clipboard.writeText(texto); aviso(mensagem); }
@@ -167,16 +190,21 @@ export const lerArquivo = arquivo => new Promise((ok, erro) => {
  * Reduz uma imagem pra caber no banco (lado máximo e compressão).
  * GIF pequeno fica como está pra não perder a animação.
  */
-export async function comprimirImagem(arquivo, ladoMax, qualidade) {
-  if (arquivo.type === "image/gif" && arquivo.size < 700_000) return lerArquivo(arquivo);
+export async function comprimirImagem(arquivo, ladoMax, qualidade, { forcarRedimensionar = false, quadrado = false } = {}) {
+  if (!forcarRedimensionar && arquivo.type === "image/gif" && arquivo.size < 700_000) return lerArquivo(arquivo);
   const url = URL.createObjectURL(arquivo);
   try {
     const img = await new Promise((ok, erro) => { const i = new Image(); i.onload = () => ok(i); i.onerror = erro; i.src = url; });
-    const escala = Math.min(1, ladoMax / Math.max(img.naturalWidth, img.naturalHeight));
+    // quadrado: corta o meio da imagem (pra foto de perfil, que aparece redonda)
+    const lado = Math.min(img.naturalWidth, img.naturalHeight);
+    const [sx, sy, sw, sh] = quadrado
+      ? [(img.naturalWidth - lado) / 2, (img.naturalHeight - lado) / 2, lado, lado]
+      : [0, 0, img.naturalWidth, img.naturalHeight];
+    const escala = Math.min(1, ladoMax / Math.max(sw, sh));
     const canvas = document.createElement("canvas");
-    canvas.width = Math.round(img.naturalWidth * escala);
-    canvas.height = Math.round(img.naturalHeight * escala);
-    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+    canvas.width = Math.round(sw * escala);
+    canvas.height = Math.round(sh * escala);
+    canvas.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
     const webp = canvas.toDataURL("image/webp", qualidade);
     return webp.startsWith("data:image/webp") ? webp : canvas.toDataURL("image/jpeg", qualidade);
   } finally {

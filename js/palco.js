@@ -83,7 +83,8 @@ function streamDe(uid, tipo) {
 function assinatura(conectado, pessoas, telas) {
   const t = telas.map(x => x.uid + x.stream.id + x.stream.getTracks().length).join(",");
   const p = pessoas.map(([uid, x]) =>
-    uid + (x.mic ? "m" : "") + (x.afk ? "a" : "") + (x.cam ? "c" + (streamDe(uid, "cam")?.getTracks().length || 0) : "")).join(",");
+    uid + (x.mic ? "m" : "") + (x.afk ? "a" : "") + (x.cam ? "c" + (streamDe(uid, "cam")?.getTracks().length || 0) : "")
+    + ":" + estadoConexao(uid)).join(",");
   return `${S.atual}|${S.canalAtual}|${conectado}|${t}|${p}`;
 }
 
@@ -138,7 +139,7 @@ function controleVolume(uid) {
   volume.addEventListener("input", () => {
     S.volumes.set(uid, Number(volume.value));
     const par = S.pares.get(uid);
-    if (par) par.saida.volume = Number(volume.value);
+    if (par) for (const saida of par.saidas) saida.volume = Number(volume.value);
   });
   rotulo.append(volume);
   return rotulo;
@@ -168,6 +169,15 @@ function criarTileTela({ uid, p, stream }) {
 }
 
 /** Quadradinho de cada pessoa: câmera se estiver ligada, senão o avatar. */
+/** Situação da ligação com a pessoa: "ok", "conectando" ou "falhou" (eu mesmo = "ok"). */
+function estadoConexao(uid) {
+  if (uid === S.user.uid || !S.call) return "ok";
+  const estado = S.pares.get(uid)?.pc.connectionState;
+  if (estado === "connected") return "ok";
+  if (estado === "failed" || estado === "disconnected" || estado === "closed") return "falhou";
+  return "conectando";
+}
+
 function criarTilePessoa(uid, p) {
   const meu = uid === S.user.uid;
   const tile = doModelo("modeloTile");
@@ -190,6 +200,16 @@ function criarTilePessoa(uid, p) {
   }
   const icones = [p.afk && "💤", !p.mic && "🔇"].filter(Boolean).join(" ");
   tile.querySelector(".tile__nome").textContent = (icones ? icones + " " : "") + p.nome + (meu ? " (você)" : "");
+  const conexao = estadoConexao(uid);
+  if (conexao !== "ok") {
+    const estado = document.createElement("span");
+    estado.className = "tile__estado tile__estado--" + conexao;
+    estado.textContent = conexao === "falhou" ? "⚠ Sem conexão" : "Conectando…";
+    estado.title = conexao === "falhou"
+      ? "A rede de um de vocês bloqueou a ligação direta. Configure a ponte (TURN) na sua conta."
+      : "Fechando a ligação com essa pessoa…";
+    tile.append(estado);
+  }
   if (!meu) {
     const acoes = document.createElement("div");
     acoes.className = "tile__acoes";

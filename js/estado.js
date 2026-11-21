@@ -3,7 +3,7 @@
  */
 import { guardar } from "./util.js";
 
-const CONFIG_PADRAO = { modoMic: "sempre", teclaPtt: "KeyV", qualidadeVoz: "voz", micId: "", sons: true };
+const CONFIG_PADRAO = { modoMic: "sempre", teclaPtt: "KeyV", qualidadeVoz: "voz", micId: "", saidaId: "", sons: true };
 
 export const S = {
   /* conta */

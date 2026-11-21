@@ -12,6 +12,7 @@ import { db, doc, getDoc, addDoc, deleteDoc, onSnapshot, query, where, srvCol, s
 import { S, CANAL, parar } from "./estado.js";
 import { ICE, TURN, QUALIDADES, QUALIDADES_VOZ, LIMITES } from "./config.js";
 import { $, aviso } from "./util.js";
+import { direcionarSaida } from "./compat.js";
 import { renderPalco } from "./palco.js";
 import { detectarFala } from "./fala.js";
 
@@ -22,6 +23,9 @@ async function enviarSinal(para, paraSessao, tipo, dados) {
   await addDoc(srvCol(S.call.sid, "sinais"), {
     de: S.user.uid, deSessao: S.sessao, para, paraSessao, tipo,
     dados: JSON.stringify(dados), ts: Date.now(),
+  }).catch(erro => {
+    if (erro.code === "permission-denied") aviso("A call não consegue se conectar: publique o firestore.rules novo no Firebase.");
+    throw erro;
   });
 }
 
@@ -35,10 +39,17 @@ export function ouvirSinais(sid) {
       .sort((a, b) => a.ts - b.ts);
     for (const sinal of novos) {
       deleteDoc(srvDoc(sid, "sinais", sinal.id)).catch(() => {});
-      const velho = sinal.paraSessao !== S.sessao || sinal.ts < S.entrouEm - 5000;
+      // a "sessão" já garante que o sinal é pra esta entrada na call;
+      // não comparamos horários porque o relógio de cada aparelho pode estar diferente
+      const velho = sinal.paraSessao !== S.sessao;
       if (S.call?.sid !== sid || velho) continue;
       tratarSinal(sinal).catch(erro => console.warn("Sinal com problema:", erro));
     }
+  }, erro => {
+    console.error("Sinais da call bloqueados:", erro);
+    aviso(erro.code === "permission-denied"
+      ? "A call não consegue se conectar: publique o firestore.rules novo no Firebase."
+      : "A call perdeu a conexão com o servidor. Saia e entre de novo no canal.");
   });
 }
 
@@ -132,18 +143,24 @@ export const usaTurn = () => iceServers.length > ICE.iceServers.length;
 function criarPar(uid, sessao) {
   const pc = new RTCPeerConnection({ iceServers });
   const par = {
-    pc, sessao, filaIce: [],
-    som: new MediaStream(),     // voz + som da tela
+    pc, sessao, uid, filaIce: [],
+    voz: new MediaStream(),      // microfone da pessoa
+    somTela: new MediaStream(),  // som da transmissão de tela
     tela: new MediaStream(),
     cam: new MediaStream(),
-    saida: document.createElement("audio"),
+    // Um tocador pra cada som: o Chrome só toca a PRIMEIRA faixa de áudio de cada tocador,
+    // então voz e som da tela juntos no mesmo tocador fariam um dos dois ficar mudo.
+    saidas: [document.createElement("audio"), document.createElement("audio")],
   };
-  par.saida.autoplay = true;
-  par.saida.setAttribute("playsinline", "");
-  par.saida.srcObject = par.som;
-  par.saida.muted = S.surdo;
-  par.saida.volume = S.volumes.get(uid) ?? 1;
-  $("audios").append(par.saida);
+  par.saidas[0].srcObject = par.voz;
+  par.saidas[1].srcObject = par.somTela;
+  for (const saida of par.saidas) {
+    saida.autoplay = true;
+    saida.setAttribute("playsinline", "");
+    $("audios").append(saida);
+    direcionarSaida(saida); // fone ou caixa escolhidos nas configurações de voz
+  }
+  ajustarSaidas(par);
 
   pc.onicecandidate = e => { if (e.candidate) enviarSinal(uid, sessao, "ice", e.candidate.toJSON()); };
   pc.ontrack = e => receberFaixa(uid, par, e);
@@ -177,12 +194,45 @@ function receberFaixa(uid, par, evento) {
 
   if (canal === CANAL.TELA) trocar(par.tela, evento.track);
   else if (canal === CANAL.CAM) trocar(par.cam, evento.track);
+  else if (canal === CANAL.SOM_TELA) { trocar(par.somTela, evento.track); tocarSaidas(par); }
   else {
-    par.som.addTrack(evento.track);
-    par.saida.play().catch(() => {});
-    if (canal === CANAL.MIC) detectarFala(uid, new MediaStream([evento.track]));
+    trocar(par.voz, evento.track);
+    tocarSaidas(par);
+    detectarFala(uid, new MediaStream([evento.track]));
   }
   renderPalco();
+}
+
+/** Volume e "ensurdecer" valem pros dois tocadores da pessoa. */
+export function ajustarSaidas(par) {
+  for (const saida of par.saidas) {
+    saida.muted = S.surdo;
+    saida.volume = S.volumes.get(par.uid) ?? 1;
+  }
+}
+
+/**
+ * Dá play no som da pessoa. Se o navegador bloquear (ele exige um clique antes de tocar som),
+ * avisa e tenta de novo no próximo toque/clique em qualquer lugar.
+ */
+export function tocarSaidas(par) {
+  for (const saida of par.saidas) {
+    if (!saida.srcObject?.getAudioTracks().length) continue;
+    saida.play().catch(erro => { if (erro.name === "NotAllowedError") pedirToqueParaOuvir(); });
+  }
+}
+
+let esperandoToque = false;
+function pedirToqueParaOuvir() {
+  if (esperandoToque) return;
+  esperandoToque = true;
+  aviso("🔇 O navegador bloqueou o som. Clique (ou toque) em qualquer lugar pra ouvir a call.");
+  const liberar = () => {
+    esperandoToque = false;
+    for (const p of S.pares.values()) tocarSaidas(p);
+  };
+  window.addEventListener("pointerdown", liberar, { once: true });
+  window.addEventListener("keydown", liberar, { once: true });
 }
 
 /** Eu começo a conversa com essa pessoa. */
@@ -252,8 +302,7 @@ export function fecharPar(uid) {
   const par = S.pares.get(uid);
   if (!par) return;
   par.pc.close();
-  par.saida.srcObject = null;
-  par.saida.remove();
+  for (const saida of par.saidas) { saida.srcObject = null; saida.remove(); }
   S.pares.delete(uid);
 }
 

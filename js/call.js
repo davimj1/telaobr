@@ -5,7 +5,7 @@
 import { setDoc, updateDoc, deleteDoc, onSnapshot, srvCol, srvDoc } from "./firebase.js";
 import { S, parar } from "./estado.js";
 import { LIMITES } from "./config.js";
-import { aleatorio, aviso } from "./util.js";
+import { aleatorio, aviso, marcarChegada, tempoSemSinal } from "./util.js";
 import { TEM_WEBRTC, manterTelaAcesa, soltarTela, destravarAudio } from "./compat.js";
 import { ouvirSinais, pararSinais, iniciarOferta, fecharPar, fecharTodos, prepararIce } from "./rtc.js";
 import { ligarMicrofone, desligarTudo, atualizarBotoes, micEstaAberto } from "./midia.js";
@@ -25,10 +25,11 @@ export function atualizarMeuStatus(campos) {
 /** Lê os documentos de presença, ignorando quem parou de dar sinal. */
 function lerPresencas(snap) {
   const mapa = new Map();
-  const agora = Date.now();
   snap.forEach(d => {
     const p = d.data();
-    if (agora - p.visto < LIMITES.presencaExpiraMs) mapa.set(d.id, p);
+    marcarChegada("voz:" + d.id, p.visto);
+    // eu mesmo sempre conto; os outros, se mandaram sinal de vida há pouco (no MEU relógio)
+    if (d.id === S.user.uid || tempoSemSinal("voz:" + d.id) < LIMITES.presencaExpiraMs) mapa.set(d.id, p);
   });
   return mapa;
 }
