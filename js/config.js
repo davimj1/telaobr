@@ -76,9 +76,9 @@ export const LIMITES = {
 
 /** Cargos, do mais forte pro mais fraco. */
 export const CARGOS = {
-  dono:    { rotulo: "Dono",      nivel: 3, cor: "#ff7a1a" },
-  admin:   { rotulo: "Admin",     nivel: 2, cor: "#ef4444" },
-  mod:     { rotulo: "Moderador", nivel: 1, cor: "#3b82f6" },
+  dono:    { rotulo: "Dono",      nivel: 3, cor: "#9aa6ff" },
+  admin:   { rotulo: "Admin",     nivel: 2, cor: "#ff9b9b" },
+  mod:     { rotulo: "Moderador", nivel: 1, cor: "#93c5fd" },
   membro:  { rotulo: "Membro",    nivel: 0, cor: "#a39a90" },
 };
 
@@ -146,3 +146,12 @@ export const EMOJIS = {
   "Jogos": "🎮 🕹️ 🎯 🎲 ♟️ 🏆 🥇 🥈 🥉 🏅 ⚽ 🏀 🏈 🎾 🏐 🎳 🏓 🥊 🎰 🧩 🗡️ ⚔️ 🛡️ 🏹 💣 🔫",
   "Coisas": "🔥 ✨ ⭐ 🌟 💫 ⚡ 💥 💯 ✅ ❌ ⚠️ ❓ ❗ 💤 💬 👀 🎉 🎊 🎁 🎂 🍕 🍔 🍟 🍿 🥤 ☕ 🍺 💰 💸 📌 📎 🎵 🎶 🎧 🎤 📺 💻 📱 🖥️ 🚀 🌙 ☀️ 🌈",
 };
+
+/* ============================================================ análise (opcional) */
+
+/**
+ * ID do Google Analytics (ex.: "G-XXXXXXX"). VAZIO = o site não usa nenhum rastreador.
+ * Se um dia preencher, o script só carrega depois que a pessoa ACEITAR os cookies
+ * (aviso de cookies, js/cookies.js) — e aí atualize a Política de Cookies e a de Privacidade.
+ */
+export const ANALYTICS_ID = "";

@@ -83,6 +83,7 @@ export async function carregarMeuPerfil() {
     const d = snap.exists() ? snap.data() : {};
     S.apelido = d.apelido || "";
     S.fotoPropria = d.fotoPropria || "";
+    S.consentimento = d.consentimento || null;
   } catch { /* sem internet: fica o do Google */ }
   aplicarMeuPerfil();
 }

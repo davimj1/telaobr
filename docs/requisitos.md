@@ -1,4 +1,4 @@
-# Telão — Documento de Requisitos
+# Zart Telão — Documento de Requisitos
 
 **Versão:** 2.4 · **Autor:** Davi (wasmorf) · **Data:** 21/11/2026
 
@@ -98,6 +98,15 @@ Generalização: Dono → Admin → Moderador → Membro (cada um herda o que o 
 | RF32 | O usuário deve poder ajustar o **volume de cada pessoa**. | Média |
 | RF33 | O usuário deve poder ligar a câmera e **transmitir a tela com som**, escolhendo 720p30, 1080p30 ou 1080p60. | Alta |
 | RF34 | O sistema deve mostrar quem está falando, mudo, com câmera e ao vivo. | Média |
+
+### Padrão Zart e leis (versão 3.0)
+| ID | Requisito | Prioridade |
+|---|---|---|
+| RF57 | O login só deve ser feito depois de a pessoa confirmar que tem 18 anos ou mais e aceitar os Termos de Uso e a Política de Privacidade; o aceite (versão e data) deve ficar registrado. | Alta |
+| RF58 | O usuário deve poder baixar uma cópia dos seus dados (perfil, servidores, amizades e mensagens que escreveu). | Alta |
+| RF59 | O usuário deve poder excluir a própria conta, apagando seus dados. | Alta |
+| RF60 | O site deve ter Política de Privacidade, Termos de Uso, Política de Cookies e Política de Reembolso, ligadas no rodapé. | Alta |
+| RF61 | O site deve mostrar um aviso de cookies com Aceitar e Recusar, que pode ser reaberto; cookies de análise só podem ser carregados depois do aceite. | Média |
 
 ### Perfil e áudio (versão 2.4)
 | ID | Requisito | Prioridade |
@@ -460,3 +469,7 @@ flowchart TD
 | RF55 | `js/midia.js` (saída), `js/compat.js` (`direcionarSaida`) |
 | RF56 | `js/midia.js` (medidor), `js/palco.js` (`estadoConexao`) |
 | RF50–RF53, RN13, RN14 | `js/amigos.js`, `js/dm.js`, `firestore.rules` (`codigos`, `amizades`, `amigos()`) |
+| RF57 | `js/auth.js` (`garantirConsentimento`, `VERSAO_TERMOS`) |
+| RF58, RF59 | `js/privacidade.js`, `firestore.rules` (exclusões) |
+| RF60 | `privacidade.html`, `termos.html`, `cookies.html`, `reembolso.html` |
+| RF61 | `js/cookies.js` |

@@ -1,0 +1,280 @@
+rules_version = '2';
+
+// =====================================================================
+//  Zart Telão — regras de segurança do Firestore
+//  Cole isto em: Firebase → Firestore Database → Regras → Publicar.
+//
+//  Ideia geral:
+//   - só membros veem um servidor e o que tem dentro dele;
+//   - cada cargo (admin, mod, membro) tem uma lista de permissões
+//     guardada no próprio servidor; o dono sempre pode tudo;
+//   - ninguém age sobre alguém de cargo igual ou maior que o seu;
+//   - banidos não conseguem voltar pelo convite;
+//   - mensagens diretas só são lidas pelas 2 pessoas da conversa,
+//     e só dá pra mandar mensagem direta pra quem é seu amigo.
+// =====================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------- ajudantes
+    function logado() { return request.auth != null; }
+    function eu() { return request.auth.uid; }
+
+    function srv(sid) { return get(/databases/$(database)/documents/servidores/$(sid)).data; }
+    function membro(sid) { return logado() && eu() in srv(sid).membros; }
+
+    // Cargo de alguém num servidor (dados = documento do servidor)
+    function cargoEm(dados, uid) {
+      return uid == dados.dono ? 'dono' : dados.get('cargos', {}).get(uid, 'membro');
+    }
+    function nivel(cargo) {
+      return {'dono': 4, 'admin': 3, 'mod': 2, 'membro': 1}[cargo];
+    }
+
+    // Permissões padrão (iguais às do config.js), usadas se o servidor não mudou nada
+    function padrao(cargo) {
+      return {
+        'admin':  {'criarCanais': true, 'gerenciarCanais': true, 'fixar': true, 'apagarMensagens': true,
+                   'enviarArquivos': true, 'transmitir': true, 'expulsar': true, 'banir': true, 'gerenciarCargos': true},
+        'mod':    {'criarCanais': true, 'gerenciarCanais': false, 'fixar': true, 'apagarMensagens': true,
+                   'enviarArquivos': true, 'transmitir': true, 'expulsar': true, 'banir': false, 'gerenciarCargos': false},
+        'membro': {'criarCanais': false, 'gerenciarCanais': false, 'fixar': false, 'apagarMensagens': false,
+                   'enviarArquivos': true, 'transmitir': true, 'expulsar': false, 'banir': false, 'gerenciarCargos': false}
+      }[cargo];
+    }
+
+    // Eu tenho esta permissão neste servidor?
+    function podeEm(dados, permissao) {
+      let cargo = cargoEm(dados, eu());
+      return cargo == 'dono'
+        || dados.get('permissoes', {}).get(cargo, {}).get(permissao, padrao(cargo)[permissao]) == true;
+    }
+    function pode(sid, permissao) { return membro(sid) && podeEm(srv(sid), permissao); }
+
+    // Meu cargo é maior que o de uid?
+    function acimaDe(dados, uid) { return nivel(cargoEm(dados, eu())) > nivel(cargoEm(dados, uid)); }
+
+    function mudou() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function entraram() { return request.resource.data.membros.toSet().difference(resource.data.membros.toSet()); }
+    function sairam()   { return resource.data.membros.toSet().difference(request.resource.data.membros.toSet()); }
+
+    // Mensagem válida (texto até 2000 letras; anexos até ~900 KB no total do documento)
+    function mensagemValida(d) {
+      return d.uid == eu()
+        && d.texto is string && d.texto.size() <= 2000
+        && d.ts is number;
+    }
+    function temAnexo(d) { return 'imagem' in d || 'arquivo' in d; }
+
+    // Só o autor edita, e só o texto (até 2000 letras)
+    function edicaoValida() {
+      return resource.data.uid == eu()
+        && mudou().hasOnly(['texto', 'editada'])
+        && request.resource.data.texto is string
+        && request.resource.data.texto.size() > 0
+        && request.resource.data.texto.size() <= 2000;
+    }
+
+    // ---------------------------------------------------------- senha do TURN
+    // Fica aqui (e não no código do site) pra não aparecer no GitHub.
+    // Só quem entrou com Google lê. Quem salvar primeiro (pela janela "Sua conta")
+    // vira o dono da configuração, e só ele pode trocar depois.
+    match /config/turn {
+      allow read: if logado();
+      allow create: if logado()
+        && request.resource.data.dono == eu()
+        && request.resource.data.keys().hasOnly(['usuario', 'senha', 'regiao', 'dono'])
+        && request.resource.data.usuario is string && request.resource.data.senha is string;
+      allow update: if logado()
+        && resource.data.dono == eu()
+        && request.resource.data.dono == eu()
+        && request.resource.data.keys().hasOnly(['usuario', 'senha', 'regiao', 'dono']);
+      allow delete: if false;
+    }
+
+    // ---------------------------------------------------------- perfis
+    match /usuarios/{uid} {
+      allow read: if logado();
+      // cada um mexe só no próprio perfil; apelido curto e foto leve
+      allow write: if logado() && eu() == uid
+        && (!('nome' in request.resource.data) || request.resource.data.nome.size() <= 60)
+        && (!('apelido' in request.resource.data) || request.resource.data.apelido.size() <= 40)
+        && (!('foto' in request.resource.data) || request.resource.data.foto.size() <= 100000)
+        && (!('fotoPropria' in request.resource.data) || request.resource.data.fotoPropria.size() <= 100000);
+      // "Excluir minha conta" (LGPD): cada um apaga o próprio perfil
+      allow delete: if logado() && eu() == uid;
+    }
+
+    // ---------------------------------------------------------- servidores
+    match /servidores/{sid} {
+      allow read: if logado() && eu() in resource.data.membros;
+
+      // Criar: você é o dono e o único membro
+      allow create: if logado()
+        && request.resource.data.dono == eu()
+        && request.resource.data.membros == [eu()]
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() > 0
+        && request.resource.data.nome.size() <= 40;
+
+      allow update: if logado() && (
+        // Dono: muda tudo (nome, capa…), menos passar o servidor pra outra pessoa
+        (resource.data.dono == eu() && request.resource.data.dono == resource.data.dono
+          && (!('capa' in request.resource.data) || request.resource.data.capa.size() <= 500000))
+
+        // Entrar pelo convite (só a si mesmo e se não estiver banido)
+        || (mudou().hasOnly(['membros']) && entraram() == [eu()].toSet() && sairam().size() == 0
+            && !(eu() in resource.data.get('banidos', [])))
+
+        // Sair do servidor (só a si mesmo)
+        || (mudou().hasOnly(['membros']) && sairam() == [eu()].toSet() && entraram().size() == 0)
+
+        // Expulsar alguém de cargo menor
+        || (eu() in resource.data.membros && mudou().hasOnly(['membros'])
+            && entraram().size() == 0 && sairam().size() == 1
+            && podeEm(resource.data, 'expulsar')
+            && acimaDe(resource.data, sairam().toList()[0]))
+
+        // Banir alguém de cargo menor (sai dos membros e entra nos banidos)
+        || (eu() in resource.data.membros && mudou().hasOnly(['membros', 'banidos'])
+            && entraram().size() == 0 && sairam().size() == 1
+            && request.resource.data.banidos.toSet().difference(resource.data.get('banidos', []).toSet()) == sairam()
+            && podeEm(resource.data, 'banir')
+            && acimaDe(resource.data, sairam().toList()[0]))
+
+        // Desbanir
+        || (eu() in resource.data.membros && mudou().hasOnly(['banidos'])
+            && resource.data.get('banidos', []).toSet().hasAll(request.resource.data.banidos)
+            && podeEm(resource.data, 'banir'))
+
+        // Dar cargos e mudar permissões (ninguém vira dono por aqui)
+        || (eu() in resource.data.membros && mudou().hasOnly(['cargos', 'permissoes'])
+            && podeEm(resource.data, 'gerenciarCargos')
+            && !('dono' in request.resource.data.get('cargos', {}).values()))
+      );
+
+      allow delete: if logado() && resource.data.dono == eu();
+
+      // ---------- canais
+      match /canais/{cid} {
+        allow read: if membro(sid);
+        allow create: if pode(sid, 'criarCanais')
+          && request.resource.data.tipo in ['texto', 'voz']
+          && request.resource.data.nome is string
+          && request.resource.data.nome.size() > 0 && request.resource.data.nome.size() <= 40;
+        allow update: if pode(sid, 'gerenciarCanais')
+          // qualquer membro grava o resumo da última mensagem (é assim que os outros veem "mensagem nova")
+          || (membro(sid) && mudou().hasOnly(['ultima']) && request.resource.data.ultima.uid == eu());
+        allow delete: if pode(sid, 'gerenciarCanais');
+
+        // ---------- mensagens do canal
+        match /mensagens/{msg} {
+          allow read: if membro(sid);
+          allow create: if membro(sid) && mensagemValida(request.resource.data)
+            && (!temAnexo(request.resource.data) || pode(sid, 'enviarArquivos'));
+          allow update: if membro(sid) && (
+            // qualquer membro reage
+            mudou().hasOnly(['reacoes'])
+            // fixar/desafixar
+            || (mudou().hasOnly(['fixada']) && pode(sid, 'fixar'))
+            // o autor edita o texto
+            || edicaoValida()
+          );
+          allow delete: if membro(sid) && (resource.data.uid == eu() || pode(sid, 'apagarMensagens'));
+        }
+
+        // ---------- "fulano está digitando": cada um só mexe no próprio aviso
+        match /digitando/{uid} {
+          allow read: if membro(sid);
+          allow write: if membro(sid) && eu() == uid;
+        }
+      }
+
+      // ---------- quem está em canal de voz: cada um só mexe na própria presença
+      match /pessoas/{uid} {
+        allow read: if membro(sid);
+        allow write: if membro(sid) && eu() == uid;
+        // quem pode expulsar também pode tirar alguém da call
+        allow delete: if pode(sid, 'expulsar');
+      }
+
+      // ---------- sinais da conexão de voz/vídeo: só o destinatário lê e apaga
+      match /sinais/{sinal} {
+        allow create: if membro(sid) && request.resource.data.de == eu();
+        allow read, delete: if logado() && resource.data.para == eu();
+      }
+    }
+
+    // ---------------------------------------------------------- códigos de amigo
+    // Cada código aponta pra uma pessoa. Dá pra consultar um código (pra adicionar),
+    // mas não listar todos. Uma vez criado, ninguém troca; só o dono apaga.
+    match /codigos/{codigo} {
+      allow get: if logado();
+      allow create: if logado()
+        && request.resource.data.uid == eu()
+        && request.resource.data.keys().hasOnly(['uid'])
+        && codigo.size() >= 4 && codigo.size() <= 12;
+      // só o dono do código apaga (ao excluir a conta)
+      allow delete: if logado() && resource.data.uid == eu();
+    }
+
+    // ---------------------------------------------------------- amizades
+    // O id é "uidA_uidB" (ordenados), igual ao da conversa direta.
+    match /amizades/{id} {
+      function lados() { return id.split('_'); }
+
+      allow get: if logado() && eu() in lados();
+      allow list: if logado() && eu() in resource.data.membros;
+
+      // pedir amizade: só em seu nome, pra outra pessoa, começando "pendente"
+      allow create: if logado()
+        && request.resource.data.de == eu()
+        && request.resource.data.para != eu()
+        && request.resource.data.para in lados()
+        && eu() in lados()
+        && request.resource.data.membros.toSet() == lados().toSet()
+        && request.resource.data.status == 'pendente'
+        && request.resource.data.keys().hasOnly(['de', 'para', 'status', 'membros', 'criadoEm']);
+
+      // aceitar: só quem recebeu o pedido
+      allow update: if logado()
+        && resource.data.para == eu()
+        && resource.data.status == 'pendente'
+        && request.resource.data.status == 'aceita'
+        && mudou().hasOnly(['status', 'aceitaEm']);
+
+      // recusar, cancelar ou desfazer: qualquer um dos dois
+      allow delete: if logado() && eu() in resource.data.membros;
+    }
+
+    // ---------------------------------------------------------- mensagens diretas
+    // O id da conversa é "uidA_uidB" (ordenados), então dá pra checar sem ler nada.
+    match /dms/{conversa} {
+      function participo() { return logado() && eu() in conversa.split('_'); }
+      // mensagem direta só entre amigos (a amizade tem o mesmo id da conversa)
+      function amigos() {
+        return exists(/databases/$(database)/documents/amizades/$(conversa))
+          && get(/databases/$(database)/documents/amizades/$(conversa)).data.status == 'aceita';
+      }
+
+      allow get: if participo();
+      allow list: if logado() && eu() in resource.data.membros; // a busca "minhas conversas"
+      allow create, update: if participo() && amigos()
+        && request.resource.data.membros.toSet() == conversa.split('_').toSet();
+      // apagar a conversa (ao excluir a conta)
+      allow delete: if participo();
+
+      match /mensagens/{msg} {
+        allow read: if participo();
+        allow create: if participo() && amigos() && mensagemValida(request.resource.data);
+        allow update: if participo() && (mudou().hasOnly(['reacoes', 'fixada']) || edicaoValida());
+        allow delete: if participo() && resource.data.uid == eu();
+      }
+
+      match /digitando/{uid} {
+        allow read: if participo();
+        allow write: if participo() && eu() == uid;
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@
  * auth.js — Login com Google e conta do usuário.
  */
 import {
-  auth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+  auth, db, doc, setDoc, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
   getRedirectResult, onAuthStateChanged, signOut,
 } from "./firebase.js";
 import { S, parar } from "./estado.js";
@@ -28,9 +28,53 @@ function explicarErro(erro) {
   return "Erro no login: " + (erro.code || erro.message);
 }
 
+/* ------------------------------------------------------------ consentimento (LGPD) */
+
+/** Versão dos Termos/Política. Mudou o texto? Mude a data: todo mundo aceita de novo. */
+export const VERSAO_TERMOS = "2026-11-25";
+
+let consentiuNoLogin = false;
+
+/** Guarda no perfil QUANDO e QUAL versão a pessoa aceitou (prova do consentimento). */
+function registrarConsentimento() {
+  S.consentimento = { versao: VERSAO_TERMOS, em: Date.now(), maiorDeIdade: true };
+  return setDoc(doc(db, "usuarios", S.user.uid), { consentimento: S.consentimento }, { merge: true }).catch(() => {});
+}
+
+/**
+ * Depois de entrar: se a pessoa ainda não aceitou esta versão dos termos
+ * (conta antiga ou termos atualizados), pede o aceite antes de continuar.
+ * @returns {Promise<boolean>} true se pode continuar
+ */
+export async function garantirConsentimento() {
+  if (S.consentimento?.versao === VERSAO_TERMOS) return true;
+  if (consentiuNoLogin) { await registrarConsentimento(); return true; }
+  const dlg = $("dlgConsentimento");
+  $("chkConsentimentoApp").checked = false;
+  $("btAceitarTermos").disabled = true;
+  dlg.showModal();
+  return new Promise(resolver => {
+    const form = dlg.querySelector("form");
+    const aoEnviar = async e => {
+      form.removeEventListener("submit", aoEnviar);
+      if (e.submitter?.value === "ok") { await registrarConsentimento(); resolver(true); }
+      else { resolver(false); sairDaConta(); }
+    };
+    form.addEventListener("submit", aoEnviar);
+  });
+}
+
 /** Abre a janelinha do Google (ou redireciona, se a janelinha for bloqueada). */
 async function entrarComGoogle() {
   $("erroLogin").textContent = "";
+  // LGPD: sem marcar a caixa (18+ e termos), não entra
+  if (!$("chkConsentimento").checked) {
+    $("erroLogin").textContent = "Para entrar, marque a caixa confirmando que você tem 18 anos ou mais e concorda com os Termos e a Política de Privacidade.";
+    $("chkConsentimento").closest(".consentimento").classList.add("consentimento--erro");
+    $("chkConsentimento").focus();
+    return;
+  }
+  consentiuNoLogin = true;
   if (NAVEGADOR_DE_APP) {
     $("erroLogin").textContent = "Abra o site no Chrome ou no Safari pra entrar com Google.";
     return;
@@ -78,6 +122,19 @@ export function iniciarLogin({ aoEntrar }) {
 
   getRedirectResult(auth).catch(erro => ($("erroLogin").textContent = explicarErro(erro)));
   $("btGoogle").addEventListener("click", entrarComGoogle);
+  $("chkConsentimento").addEventListener("change", e => {
+    e.target.closest(".consentimento").classList.remove("consentimento--erro");
+    if (e.target.checked) $("erroLogin").textContent = "";
+  });
+  $("chkConsentimentoApp").addEventListener("change", e => { $("btAceitarTermos").disabled = !e.target.checked; });
+  // a janela de aceite não fecha com Esc: ou aceita, ou sai
+  $("dlgConsentimento").addEventListener("cancel", e => e.preventDefault());
+  // "Pular para o conteúdo": leva o foco pra área principal que está aparecendo
+  $("linkPular").addEventListener("click", e => {
+    e.preventDefault();
+    const alvo = S.user ? $("conteudoApp") : $("conteudoLogin");
+    alvo.focus();
+  });
   $("btUsuario").addEventListener("click", abrirConta);
   iniciarEdicaoPerfil();
   aoEscolher($("dlgConta"), v => {

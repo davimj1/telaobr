@@ -1,6 +1,7 @@
 /**
  * servidores.js — Lista de servidores, criar (com modelo), convidar, configurar, sair e excluir.
  */
+import { apagarServidorInteiro } from "./privacidade.js";
 import {
   db, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, where,
   arrayUnion, arrayRemove, srvDoc,
@@ -94,7 +95,8 @@ export async function excluirServidor() {
   if (!await confirmar("O servidor some pra todo mundo. Isso não tem volta.", { titulo: "Excluir servidor?", botao: "Excluir servidor" })) return;
   const sid = S.atual;
   if (S.call?.sid === sid) await sairDaCall();
-  await deleteDoc(srvDoc(sid)).catch(e => aviso("Erro: " + e.code));
+  // apaga também canais, mensagens e presença (senão ficam guardados sem ninguém ver)
+  await apagarServidorInteiro(sid).catch(e => aviso("Erro: " + (e.code || e.message)));
 }
 
 /* ------------------------------------------------------------ navegação */

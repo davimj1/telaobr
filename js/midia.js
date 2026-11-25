@@ -85,7 +85,7 @@ function explicarErroMicrofone(erro, silencioso) {
   if (erro.name === "NotFoundError")
     return inicio + "nenhum microfone encontrado. Conecte um e tente de novo.";
   if (erro.name === "NotReadableError" || erro.name === "AbortError")
-    return inicio + "o microfone está sendo usado por outro app (ligação, WhatsApp, Discord…). Feche ele e toque em Ligar mic.";
+    return inicio + "o microfone está sendo usado por outro app (uma ligação ou outro app de chamada). Feche ele e toque em Ligar mic.";
   return inicio + "não deu pra ligar o microfone (" + erro.name + "). Toque em Ligar mic pra tentar de novo.";
 }
 

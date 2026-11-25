@@ -3,45 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Telão: servidores com canais de texto e voz, chat, call, câmera e transmissão de tela para você e seus amigos.">
-  <meta name="theme-color" content="#090807">
+  <meta name="description" content="Zart Telão: servidores com canais de texto e voz, chat, chamada, câmera e transmissão de tela para você e seus amigos. Um projeto do grupo Zart.">
+  <meta name="theme-color" content="#05081a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Telão">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="manifest.webmanifest">
-  <title>Telão</title>
-  <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+  <title>Zart Telão</title>
+  <link rel="icon" type="image/png" href="img/zart/favicon.png">
   <link rel="apple-touch-icon" href="img/icones/apple-180.png">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <a class="pular" href="#conteudo" id="linkPular">Pular para o conteúdo</a>
 
   <!-- ================================================= LOGIN -->
-  <main id="telaLogin" class="login">
-    <section class="login__cartao" aria-labelledby="tituloLogin">
-      <img class="login__logo" src="img/logo.svg" alt="Logo do Telão: uma tela com o sinal de ao vivo" width="88" height="88">
-      <h1 id="tituloLogin" class="marca">Tel<span class="marca__destaque">ão</span></h1>
-      <p class="login__texto">Seus servidores com canais de texto e voz, call, câmera e transmissão de tela, só pra galera.</p>
-      <button id="btGoogle" class="botao botao--google" type="button">
-        <img src="img/google.svg" alt="" width="18" height="18">
-        Entrar com Google
-      </button>
-      <p id="erroLogin" class="login__erro" role="alert"></p>
+  <div id="telaLogin" class="login">
+    <header class="cabecalho-zart">
+      <span class="marca-zart">
+        <img class="marca-zart__logo" src="img/zart/zart-logo.png" alt="Zart" width="96" height="46">
+        <span class="marca-zart__sub">Telão</span>
+      </span>
+    </header>
+
+    <main id="conteudoLogin" class="login__meio" tabindex="-1">
+      <section class="login__cartao" aria-labelledby="tituloLogin">
+        <img class="login__logo" src="img/icones/icone-192.png" alt="" width="88" height="88">
+        <h1 id="tituloLogin" class="login__titulo">Zart Telão</h1>
+        <p class="login__texto">Servidores com canais de texto e voz, chamada, câmera e transmissão de tela, pra você e seus amigos.</p>
+
+        <div class="consentimento">
+          <input id="chkConsentimento" type="checkbox" aria-describedby="textoConsentimento">
+          <label for="chkConsentimento">
+            Tenho <strong>18 anos ou mais</strong> e li e concordo com os
+            <a href="termos.html">Termos de Uso</a> e a <a href="privacidade.html">Política de Privacidade</a>.
+          </label>
+        </div>
+        <p id="textoConsentimento" class="consentimento__texto">
+          Para criar seu perfil usamos o nome, a foto e o e-mail da sua conta Google. Seu e-mail não aparece pra ninguém.
+          Detalhes na <a href="privacidade.html">Política de Privacidade</a>.
+        </p>
+
+        <button id="btGoogle" class="botao botao--google" type="button">
+          <img src="img/google.svg" alt="" width="18" height="18">
+          Entrar com Google
+        </button>
+        <p id="erroLogin" class="login__erro" role="alert"></p>
       <p id="avisoNavegador" class="login__aviso" hidden>
         Você abriu pelo navegador de um app (WhatsApp, Instagram…). O Google bloqueia login aí.
         <strong>Toque nos ⋮ ou no ícone de compartilhar e escolha “Abrir no navegador”.</strong>
       </p>
-    </section>
-  </main>
+      </section>
+    </main>
+
+    <footer class="rodape-zart">
+      <p class="rodape-zart__frase">Um projeto do grupo Zart.</p>
+      <nav aria-label="Informações legais">
+        <ul class="rodape-zart__links">
+          <li><a href="privacidade.html">Política de Privacidade</a></li>
+          <li><a href="termos.html">Termos de Uso</a></li>
+          <li><a href="cookies.html">Política de Cookies</a></li>
+          <li><a href="reembolso.html">Política de Reembolso</a></li>
+          <li><button type="button" class="link-botao" data-preferencias-cookies>Preferências de cookies</button></li>
+        </ul>
+      </nav>
+      <p class="rodape-zart__dados">Responsável: Grupo Zart · Contato: <a href="mailto:projetozart@gmail.com">projetozart@gmail.com</a></p>
+    </footer>
+  </div>
 
   <!-- ================================================= APP -->
   <div id="telaApp" class="app" data-aba="canais" hidden>
+    <h1 class="so-leitor">Zart Telão</h1>
 
     <!-- Barra de servidores (esquerda) -->
     <nav class="trilho" aria-label="Seus servidores">
       <button id="btDms" class="trilho__item trilho__item--dms" type="button" title="Mensagens diretas" aria-label="Mensagens diretas">
-        <img src="img/logo.svg" alt="" width="30" height="30">
+        <img src="img/zart/favicon.png" alt="" width="30" height="30">
       </button>
       <hr class="trilho__separador">
       <ul id="listaServidores" class="trilho__lista"></ul>
@@ -119,7 +157,7 @@
     </aside>
 
     <!-- Conteúdo principal -->
-    <main class="principal">
+    <main id="conteudoApp" class="principal" tabindex="-1">
 
       <!-- O navegador bloqueou o som da call -->
       <button id="faixaSom" class="faixa faixa--som" type="button" hidden>
@@ -135,7 +173,7 @@
 
       <!-- Nada aberto -->
       <section id="painelVazio" class="vazio vazio--principal">
-        <img class="vazio__logo" src="img/logo.svg" alt="" width="72" height="72">
+        <img class="vazio__logo" src="img/icones/icone-192.png" alt="" width="72" height="72">
         <h2 id="vazioTitulo" class="vazio__titulo"></h2>
         <p id="vazioTexto" class="vazio__texto"></p>
       </section>
@@ -295,7 +333,7 @@
   <!-- ================================================= JANELAS -->
   <dialog id="dlgServidor" class="janela">
     <form method="dialog" class="janela__form">
-      <h3 class="janela__titulo">Criar servidor</h3>
+      <h2 class="janela__titulo">Criar servidor</h2>
       <label for="campoNomeServidor" class="janela__rotulo">Nome do servidor</label>
       <input id="campoNomeServidor" class="campo" type="text" maxlength="40" placeholder="Ex.: Rolê de Sexta" required>
       <label for="selModelo" class="janela__rotulo">Começar com os canais de</label>
@@ -309,7 +347,7 @@
 
   <dialog id="dlgCanal" class="janela">
     <form method="dialog" class="janela__form">
-      <h3 id="tituloDlgCanal" class="janela__titulo">Novo canal</h3>
+      <h2 id="tituloDlgCanal" class="janela__titulo">Novo canal</h2>
       <label for="campoNomeCanal" class="janela__rotulo">Nome do canal</label>
       <input id="campoNomeCanal" class="campo" type="text" maxlength="40" placeholder="Ex.: geral" required>
       <div class="janela__botoes">
@@ -321,7 +359,7 @@
 
   <dialog id="dlgConfigServidor" class="janela janela--larga">
     <form method="dialog" class="janela__form">
-      <h3 class="janela__titulo">Configurações do servidor</h3>
+      <h2 class="janela__titulo">Configurações do servidor</h2>
       <div class="config__abas" role="tablist">
         <button class="config__aba" type="button" role="tab" aria-selected="true" aria-controls="cfgGeral">Geral</button>
         <button class="config__aba" type="button" role="tab" aria-selected="false" aria-controls="cfgPermissoes">Permissões</button>
@@ -371,7 +409,7 @@
 
   <dialog id="dlgConfigVoz" class="janela">
     <form method="dialog" class="janela__form">
-      <h3 class="janela__titulo">Configurações de voz</h3>
+      <h2 class="janela__titulo">Configurações de voz</h2>
       <fieldset class="grupo">
         <legend class="janela__rotulo">Como o microfone funciona</legend>
         <label class="opcao"><input id="modoMicSempre" type="radio" name="modoMic" value="sempre"> Detecção de voz (sempre aberto)</label>
@@ -402,7 +440,7 @@
 
   <dialog id="dlgNovaConversa" class="janela">
     <form method="dialog" class="janela__form">
-      <h3 class="janela__titulo">Nova conversa</h3>
+      <h2 class="janela__titulo">Nova conversa</h2>
       <ul id="listaContatos" class="dms dms--contatos"></ul>
       <div class="janela__botoes">
         <button class="botao" value="fechar">Fechar</button>
@@ -416,7 +454,7 @@
 
   <dialog id="dlgConta" class="janela janela--larga">
     <form method="dialog" class="janela__form">
-      <h3 class="janela__titulo">Sua conta</h3>
+      <h2 class="janela__titulo">Sua conta</h2>
       <p id="infoConta" class="janela__texto"></p>
       <fieldset class="grupo">
         <legend class="janela__rotulo">Perfil</legend>
@@ -459,6 +497,21 @@
         </select>
         <button id="btSalvarPonte" class="botao botao--primario botao--pequeno" type="button">Salvar ponte</button>
       </fieldset>
+      <fieldset class="grupo">
+        <legend class="janela__rotulo">Privacidade e seus dados</legend>
+        <p class="janela__texto janela__texto--pequeno">Baixe uma cópia dos seus dados ou apague sua conta (direitos da LGPD). Veja os detalhes na <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</p>
+        <div class="linha linha--quebra">
+          <button id="btBaixarDados" class="botao botao--pequeno" type="button">Baixar meus dados</button>
+          <button id="btExcluirConta" class="botao botao--perigo botao--pequeno" type="button">Excluir minha conta</button>
+        </div>
+        <p id="estadoDados" class="janela__texto janela__texto--pequeno" role="status" aria-live="polite"></p>
+        <ul class="links-legais">
+          <li><a href="termos.html" target="_blank" rel="noopener">Termos de Uso</a></li>
+          <li><a href="cookies.html" target="_blank" rel="noopener">Política de Cookies</a></li>
+          <li><a href="reembolso.html" target="_blank" rel="noopener">Política de Reembolso</a></li>
+          <li><button type="button" class="link-botao" data-preferencias-cookies>Preferências de cookies</button></li>
+        </ul>
+      </fieldset>
       <div class="janela__botoes">
         <button class="botao" value="fechar">Fechar</button>
         <button id="btAfk" class="botao" value="afk">Ficar AFK</button>
@@ -469,7 +522,7 @@
 
   <dialog id="dlgInstalarIos" class="janela">
     <form method="dialog" class="janela__form">
-      <h3 class="janela__titulo">Instalar no iPhone / iPad</h3>
+      <h2 class="janela__titulo">Instalar no iPhone / iPad</h2>
       <ol class="passos">
         <li>Abra o Telão no <strong>Safari</strong>.</li>
         <li>Toque em <strong>Compartilhar</strong> (o quadrado com a setinha pra cima).</li>
@@ -483,9 +536,28 @@
     </form>
   </dialog>
 
+  <dialog id="dlgConsentimento" class="janela" aria-labelledby="tituloConsentimento">
+    <form method="dialog" class="janela__form">
+      <h2 id="tituloConsentimento" class="janela__titulo">Antes de continuar</h2>
+      <p class="janela__texto">Pra usar o Zart Telão, confirme que leu e concorda com os termos (eles podem ter sido atualizados).</p>
+      <div class="consentimento">
+        <input id="chkConsentimentoApp" type="checkbox">
+        <label for="chkConsentimentoApp">
+          Tenho <strong>18 anos ou mais</strong> e li e concordo com os
+          <a href="termos.html" target="_blank" rel="noopener">Termos de Uso</a> e a
+          <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.
+        </label>
+      </div>
+      <div class="janela__botoes">
+        <button class="botao" value="sair" formnovalidate>Sair da conta</button>
+        <button id="btAceitarTermos" class="botao botao--primario" value="ok" disabled>Continuar</button>
+      </div>
+    </form>
+  </dialog>
+
   <dialog id="dlgConfirmar" class="janela">
     <form method="dialog" class="janela__form">
-      <h3 id="confirmarTitulo" class="janela__titulo"></h3>
+      <h2 id="confirmarTitulo" class="janela__titulo"></h2>
       <p id="confirmarTexto" class="janela__texto"></p>
       <label for="confirmarCampo" class="so-leitor">Texto</label>
       <input id="confirmarCampo" class="campo" type="text" readonly hidden>
@@ -564,7 +636,7 @@
 
   <template id="modeloVazio">
     <div class="vazio">
-      <img class="vazio__logo" src="img/logo.svg" alt="" width="64" height="64">
+      <img class="vazio__logo" src="img/icones/icone-192.png" alt="" width="64" height="64">
       <h2 class="vazio__titulo"></h2>
       <p class="vazio__texto"></p>
       <button class="botao botao--primario vazio__botao" type="button" hidden></button>

@@ -141,7 +141,7 @@ export function definirContadorDms(funcao) { contarDmsNaoLidas = funcao; }
 
 export function atualizarTitulo() {
   const total = mencoes.size + contarDmsNaoLidas();
-  document.title = total ? `(${total}) Telão` : "Telão";
+  document.title = total ? `(${total}) Zart Telão` : "Zart Telão";
 }
 
 /* ------------------------------------------------------------ som */

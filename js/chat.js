@@ -8,7 +8,7 @@ import { S, parar } from "./estado.js";
 import { LIMITES, REACOES_RAPIDAS } from "./config.js";
 import {
   $, cor, criarAvatar, dataCurta, aviso, doModelo, textoRico, comprimirImagem, lerArquivo,
-  tamanhoLegivel, menuFlutuante, confirmar, fotoSegura,
+  tamanhoLegivel, menuFlutuante, confirmar, fotoSegura, corTexto,
 } from "./util.js";
 import { ehCelular } from "./compat.js";
 import { pode, cargoDe } from "./permissoes.js";
@@ -152,7 +152,7 @@ function criarMensagem(m, junta, nomes) {
   li.prepend(criarAvatar(nomeAutor, atual?.foto || m.foto, { classe: "avatar msg__avatar" }));
   const autor = li.querySelector(".msg__autor");
   autor.textContent = nomeAutor;
-  autor.style.color = cor(nomeAutor);
+  autor.style.color = corTexto(nomeAutor);
   if (ehCanal()) {
     const cargo = cargoDe(m.uid);
     const selo = li.querySelector(".msg__cargo");
@@ -467,7 +467,7 @@ function criarResultado(m, termo) {
   topo.className = "resultado__topo";
   const nome = document.createElement("strong");
   nome.textContent = m.nome;
-  nome.style.color = cor(m.nome);
+  nome.style.color = corTexto(m.nome);
   const hora = document.createElement("time");
   hora.className = "msg__hora";
   hora.textContent = dataCurta(m.ts);

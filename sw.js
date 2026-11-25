@@ -9,21 +9,25 @@
  *
  * Ao adicionar um arquivo novo no site, ponha ele em ARQUIVOS e aumente a VERSAO.
  */
-const VERSAO = "telao-v2.9";
+const VERSAO = "telao-v3.0";
 
 const ARQUIVOS = [
   "./",
   "index.html",
   "manifest.webmanifest",
   "css/style.css",
-  "img/logo.svg",
-  "img/logo.png",
+  "privacidade.html",
+  "termos.html",
+  "cookies.html",
+  "reembolso.html",
+  "img/zart/zart-logo.png",
+  "img/zart/favicon.png",
   "img/google.svg",
   "img/icones/icone-192.png",
   ...[
     "main", "config", "firebase", "estado", "util", "compat", "ui", "auth", "perfis",
     "permissoes", "servidores", "canais", "chat", "emoji", "membros", "dm", "call",
-    "rtc", "midia", "palco", "fala", "avisos", "ponte", "app", "amigos",
+    "rtc", "midia", "palco", "fala", "avisos", "ponte", "app", "amigos", "cookies", "privacidade",
   ].map(nome => `js/${nome}.js`),
 ];
 

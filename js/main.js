@@ -27,8 +27,10 @@
  *   amigos.js       código de amigo, pedidos de amizade e tela de amigos
  */
 import { iniciarCompat } from "./compat.js";
+import { iniciarCookies } from "./cookies.js";
+import { iniciarPrivacidade } from "./privacidade.js";
 import { iniciarAbas, renderTudo } from "./ui.js";
-import { iniciarLogin } from "./auth.js";
+import { iniciarLogin, garantirConsentimento } from "./auth.js";
 import { iniciarMeuStatus, carregarMeuPerfil } from "./perfis.js";
 import { iniciarServidores, ouvirServidores, tratarConvite } from "./servidores.js";
 import { iniciarCanais } from "./canais.js";
@@ -44,6 +46,8 @@ import { iniciarApp } from "./app.js";
 import { iniciarAmigos, aoEntrarAmigos } from "./amigos.js";
 
 iniciarCompat();
+iniciarCookies();
+iniciarPrivacidade();
 iniciarApp();
 iniciarAbas();
 iniciarServidores();
@@ -61,6 +65,7 @@ iniciarAmigos();
 iniciarLogin({
   async aoEntrar() {
     await carregarMeuPerfil(); // apelido e foto escolhidos no Telão
+    if (!await garantirConsentimento()) return; // LGPD: aceite dos termos antes de usar
     iniciarMeuStatus();
     ouvirServidores();
     ouvirDms();

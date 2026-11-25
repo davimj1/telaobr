@@ -12,10 +12,16 @@ export function esc(texto) {
 }
 
 /** Gera uma cor fixa a partir de um texto (o mesmo nome sempre tem a mesma cor). */
+const tom = texto => { let h = 0; for (const c of String(texto)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+
+/** Cor de FUNDO de uma pessoa/servidor (com texto branco em cima, contraste ≥ 4,5:1). */
 export function cor(texto) {
-  let h = 0;
-  for (const c of String(texto)) h = (h * 31 + c.charCodeAt(0)) % 360;
-  return `hsl(${h} 55% 45%)`;
+  return `hsl(${tom(texto)} 60% 30%)`;
+}
+
+/** Cor de TEXTO de uma pessoa (nome no chat) sobre o fundo escuro (contraste ≥ 4,5:1). */
+export function corTexto(texto) {
+  return `hsl(${tom(texto)} 80% 76%)`;
 }
 
 /** "Davi Mello" -> "DM" */
@@ -252,4 +258,13 @@ export function menuFlutuante(ancora, itens) {
   menu.style.left = Math.max(8, Math.min(r.left, innerWidth - largura - 8)) + "px";
   menu.style.top = (r.bottom + altura + 8 > innerHeight ? r.top - altura - 4 : r.bottom + 4) + "px";
   setTimeout(() => document.addEventListener("click", fecharMenus, { once: true }), 0);
+  // teclado: o foco entra no menu, setas andam, Esc fecha e volta pro botão que abriu
+  const botoes = [...menu.querySelectorAll("button")];
+  botoes[0]?.focus();
+  menu.addEventListener("keydown", e => {
+    const i = botoes.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") { e.preventDefault(); botoes[(i + 1) % botoes.length].focus(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); botoes[(i - 1 + botoes.length) % botoes.length].focus(); }
+    else if (e.key === "Escape" || e.key === "Tab") { e.preventDefault(); fecharMenus(); ancora.focus?.(); }
+  });
 }
