@@ -120,7 +120,7 @@ service cloud.firestore {
       allow update: if logado() && (
         // Dono: muda tudo (nome, capa…), menos passar o servidor pra outra pessoa
         (resource.data.dono == eu() && request.resource.data.dono == resource.data.dono
-          && (!('capa' in request.resource.data) || request.resource.data.capa.size() <= 500000))
+          && (!('capa' in request.resource.data) || request.resource.data.capa.size() <= 900000))
 
         // Entrar pelo convite (só a si mesmo e se não estiver banido)
         || (mudou().hasOnly(['membros']) && entraram() == [eu()].toSet() && sairam().size() == 0

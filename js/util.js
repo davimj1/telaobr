@@ -218,6 +218,17 @@ export async function comprimirImagem(arquivo, ladoMax, qualidade, { forcarRedim
   }
 }
 
+/**
+ * Enquadra a foto de capa numa moldura de qualquer formato (bolinha, topo, prévia).
+ * x/y = ponto da foto (0–100%) que fica no mesmo ponto da moldura; z = zoom (1–3).
+ */
+export function enquadrarCapa(img, ajuste) {
+  const { x = 50, y = 50, z = 1 } = ajuste || {};
+  img.style.objectPosition = `${x}% ${y}%`;
+  img.style.transformOrigin = `${x}% ${y}%`;
+  img.style.transform = z > 1 ? `scale(${z})` : "";
+}
+
 /** 1536 -> "1,5 KB" */
 export function tamanhoLegivel(bytes) {
   if (bytes < 1024) return bytes + " B";

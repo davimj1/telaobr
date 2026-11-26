@@ -395,13 +395,18 @@ body.modo-dm .membros { display: none; }
 .passos { display: flex; flex-direction: column; gap: .55rem; margin: 0; padding-left: 1.4rem; line-height: 1.45; list-style: decimal; }
 .passos li::marker { color: var(--destaque); font-weight: 700; }
 
-/* servidor com foto de capa: a foto preenche a bolinha */
+/* servidor com foto de capa: a foto preenche a bolinha (qualquer formato de foto) */
 .trilho__item--foto { padding: 0; background: var(--fundo-3); }
+.trilho__moldura {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
 .trilho__foto {
   width: 100%; height: 100%;
-  border-radius: inherit;
+  max-width: none;
   object-fit: cover;
-  transition: border-radius .2s;
 }
 
 /* barrinha do servidor aberto */
@@ -496,6 +501,7 @@ body.modo-dm .membros { display: none; }
 
 /* prévia da capa nas configurações */
 .capa-config {
+  position: relative;
   display: grid;
   place-items: center;
   height: 110px;
@@ -504,7 +510,20 @@ body.modo-dm .membros { display: none; }
   border-radius: var(--raio-pequeno);
   background: var(--fundo-1);
 }
-.capa-config__imagem { width: 100%; height: 100%; object-fit: cover; }
+.capa-config__imagem { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.lateral__capa, .capa-bolinha img { max-width: none; }
+
+/* editor do enquadramento da capa: moldura no formato do topo + bolinha */
+.capa-editor { display: flex; align-items: center; gap: .9rem; }
+.capa-editor .capa-config { flex: 0 1 340px; aspect-ratio: 240 / 132; height: auto; }
+.capa-config--editavel { cursor: grab; touch-action: none; }
+.capa-config--arrastando { cursor: grabbing; }
+.capa-config--editavel:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
+.capa-editor__lado { display: flex; flex-direction: column; align-items: center; gap: .3rem; color: var(--texto-suave); }
+.capa-bolinha { display: block; width: 46px; height: 46px; border-radius: 50%; overflow: hidden; background: var(--fundo-3); }
+.capa-bolinha img { width: 100%; height: 100%; object-fit: cover; }
+.capa-zoom { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; margin-top: .5rem; }
+.capa-zoom input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--destaque); }
 .capa-config__vazio { color: var(--texto-suave); font-size: .85rem; }
 .janela__texto--pequeno { font-size: .78rem; }
 .lateral__titulo,

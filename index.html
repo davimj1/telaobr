@@ -373,16 +373,28 @@
           <button id="btRenomearServidor" class="botao" type="button">Salvar nome</button>
         </div>
         <p class="janela__rotulo">Foto de capa</p>
-        <div class="capa-config">
-          <img id="previewCapa" class="capa-config__imagem" src="data:," alt="Capa atual do servidor" hidden>
-          <p id="semCapa" class="capa-config__vazio">Sem capa</p>
+        <div class="capa-editor">
+          <div id="molduraCapa" class="capa-config" tabindex="-1" aria-label="Enquadramento da capa: arraste a foto pra posicionar. Com o teclado, use as setas pra mover e + ou - pro zoom." aria-describedby="dicaCapa">
+            <img id="previewCapa" class="capa-config__imagem" src="data:," alt="Capa atual do servidor" draggable="false" hidden>
+            <p id="semCapa" class="capa-config__vazio">Sem capa</p>
+          </div>
+          <div id="ladoCapa" class="capa-editor__lado" hidden>
+            <span class="capa-bolinha" aria-hidden="true"><img id="previewBolinha" src="data:," alt="" draggable="false"></span>
+            <span class="janela__texto--pequeno">Bolinha</span>
+          </div>
+        </div>
+        <div id="ajusteCapa" class="capa-zoom" hidden>
+          <label for="zoomCapa" class="janela__texto--pequeno">Zoom</label>
+          <input id="zoomCapa" type="range" min="1" max="3" step="0.05" value="1">
+          <button id="btCentralizarCapa" class="botao-texto" type="button">Centralizar</button>
+          <button id="btSalvarAjusteCapa" class="botao botao--primario botao--pequeno" type="button" hidden>Salvar ajuste</button>
         </div>
         <div id="botoesCapa" class="linha">
           <button id="btEscolherCapa" class="botao botao--pequeno" type="button">Escolher imagem</button>
           <button id="btRemoverCapa" class="botao-texto botao-texto--perigo" type="button">Remover capa</button>
           <input id="entradaCapa" type="file" accept="image/*" hidden>
         </div>
-        <p id="dicaCapa" class="janela__texto janela__texto--pequeno">Aparece na bolinha do servidor e no topo da lista de canais. Dica: imagem deitada (tipo 3:1) fica melhor. Pode ser GIF.</p>
+        <p id="dicaCapa" class="janela__texto janela__texto--pequeno">Aparece na bolinha do servidor e no topo da lista de canais. Depois de escolher, <strong>arraste a foto</strong> e use o zoom pra ajustar o enquadramento. Pode ser foto em pé ou deitada, e pode ser GIF.</p>
         <div class="linha linha--separada">
           <button id="btSairServidor" class="botao-texto botao-texto--perigo" type="button">Sair do servidor</button>
           <button id="btExcluirServidor" class="botao-texto botao-texto--perigo" type="button">Excluir servidor</button>

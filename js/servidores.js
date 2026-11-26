@@ -8,7 +8,7 @@ import {
 } from "./firebase.js";
 import { S, parar, servidorAtual } from "./estado.js";
 import { LIMITES, MODELOS, PERMISSOES_PADRAO } from "./config.js";
-import { $, cor, iniciais, aviso, copiar, confirmar, guardar, imagemSegura, aoEscolher } from "./util.js";
+import { $, cor, iniciais, aviso, copiar, confirmar, guardar, imagemSegura, aoEscolher, enquadrarCapa } from "./util.js";
 import { ehCelular } from "./compat.js";
 import { ouvirCanais, pararCanais, criarCanaisDoModelo } from "./canais.js";
 import { ouvirPessoas, pararPessoas, sairDaCall } from "./call.js";
@@ -136,11 +136,16 @@ export function renderTrilho() {
     // com foto: a capa vira o ícone (cortada no meio); sem foto: iniciais coloridas
     const foto = imagemSegura(srv.capa);
     if (foto) {
+      // a moldura corta a foto no formato da bolinha (a foto pode ter zoom)
+      const moldura = document.createElement("span");
+      moldura.className = "trilho__moldura";
       const img = document.createElement("img");
       img.className = "trilho__foto";
       img.src = foto;
       img.alt = "";
-      bt.append(img);
+      enquadrarCapa(img, srv.capaAjuste);
+      moldura.append(img);
+      bt.append(moldura);
       bt.classList.add("trilho__item--foto");
     } else {
       bt.style.backgroundColor = cor(srv.nome);
@@ -170,6 +175,7 @@ export function renderTopoServidor() {
   $("topoServidor").classList.toggle("lateral__topo--capa", !!capa);
   $("imgCapa").hidden = !capa;
   if (capa && $("imgCapa").src !== capa) $("imgCapa").src = capa;
+  if (capa) enquadrarCapa($("imgCapa"), srv.capaAjuste);
   $("btConvite").hidden = !srv;
   $("btConfigServidor").hidden = !srv;
   $("cargoLateral").hidden = !srv;

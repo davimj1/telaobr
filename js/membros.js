@@ -5,7 +5,7 @@
 import { updateDoc, arrayRemove, arrayUnion, srvDoc } from "./firebase.js";
 import { S, servidorAtual } from "./estado.js";
 import { CARGOS, PERMISSOES, LIMITES } from "./config.js";
-import { $, criarAvatar, aviso, confirmar, menuFlutuante, esc, comprimirImagem, imagemSegura } from "./util.js";
+import { $, criarAvatar, aviso, confirmar, menuFlutuante, esc, comprimirImagem, imagemSegura, enquadrarCapa, lerArquivo } from "./util.js";
 import { deleteField } from "./firebase.js";
 import { cargoDe, meuCargo, pode, possoAgirSobre, cargosQuePossoDar, permissoesDoCargo } from "./permissoes.js";
 import { perfil, statusDe } from "./perfis.js";
@@ -141,10 +141,9 @@ function renderConfigServidor() {
   $("btRenomearServidor").hidden = !souDono;
   $("btExcluirServidor").hidden = !souDono;
   $("btSairServidor").hidden = souDono;
-  renderPreviewCapa(srv.capa);
+  renderPreviewCapa(srv.capa, srv.capaAjuste, souDono);
   $("botoesCapa").hidden = !souDono;
   $("dicaCapa").hidden = !souDono;
-  $("btRemoverCapa").hidden = !srv.capa;
 
   // Permissões: tabela cargo x permissão
   const tabela = $("tabelaPermissoes");
@@ -197,15 +196,120 @@ async function salvarPermissoes() {
 
 /* ------------------------------------------------------------ foto de capa */
 
-const CAPA_LARGURA = 960;          // a capa aparece com ~240 px de largura; 960 fica nítida em tela retina
-const CAPA_MAX_CARACTERES = 450_000; // o servidor inteiro é baixado por todos os membros: capa leve
+const CAPA_LADO = 1600;             // lado maior da foto (fica nítida mesmo com zoom)
+const CAPA_MAX_CARACTERES = 850_000; // cabe no documento do servidor (limite do Firestore: 1 MB)
+const AJUSTE_PADRAO = { x: 50, y: 50, z: 1 };
 
-function renderPreviewCapa(capa) {
+let ajuste = { ...AJUSTE_PADRAO };  // enquadramento sendo editado
+let ajusteSalvo = { ...AJUSTE_PADRAO };
+
+const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
+const arredondar = a => ({ x: Math.round(a.x * 10) / 10, y: Math.round(a.y * 10) / 10, z: Math.round(a.z * 100) / 100 });
+
+function mostrarAjuste() {
+  enquadrarCapa($("previewCapa"), ajuste);
+  enquadrarCapa($("previewBolinha"), ajuste);
+  $("zoomCapa").value = ajuste.z;
+  const mudou = JSON.stringify(arredondar(ajuste)) !== JSON.stringify(arredondar(ajusteSalvo));
+  $("btSalvarAjusteCapa").hidden = !mudou;
+}
+
+let podeEditarCapa = true;
+function renderPreviewCapa(capa, ajusteAtual, editavel = podeEditarCapa) {
+  podeEditarCapa = editavel;
   const img = $("previewCapa");
   const src = imagemSegura(capa);
   img.hidden = !src;
   $("semCapa").hidden = !!src;
-  if (src) img.src = src;
+  $("ladoCapa").hidden = !src;
+  $("ajusteCapa").hidden = !src || !editavel;
+  $("molduraCapa").classList.toggle("capa-config--editavel", !!src && editavel);
+  $("molduraCapa").tabIndex = src && editavel ? 0 : -1;
+  $("btRemoverCapa").hidden = !src;
+  if (src) { img.src = src; $("previewBolinha").src = src; }
+  ajusteSalvo = { ...AJUSTE_PADRAO, ...(ajusteAtual || {}) };
+  ajuste = { ...ajusteSalvo };
+  mostrarAjuste();
+}
+
+/**
+ * Move a foto como se fosse arrastada dx/dy pixels.
+ * Com object-fit: cover, o ponto x% da foto fica no ponto x% da moldura;
+ * então a borda esquerda está em x·(largura da moldura − largura da foto).
+ */
+function moverCapa(dx, dy) {
+  const img = $("previewCapa");
+  const m = $("molduraCapa").getBoundingClientRect();
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  if (!iw || !ih) return;
+  const escala = Math.max(m.width / iw, m.height / ih) * ajuste.z;
+  const sobraX = iw * escala - m.width, sobraY = ih * escala - m.height;
+  if (sobraX > 0.5) ajuste.x = limitar(ajuste.x - dx / sobraX * 100, 0, 100);
+  if (sobraY > 0.5) ajuste.y = limitar(ajuste.y - dy / sobraY * 100, 0, 100);
+  mostrarAjuste();
+}
+
+function zoomCapa(z) {
+  ajuste.z = limitar(z, 1, 3);
+  mostrarAjuste();
+}
+
+function ligarEditorCapa() {
+  const moldura = $("molduraCapa");
+  let ultimo = null;
+  moldura.addEventListener("pointerdown", e => {
+    if ($("previewCapa").hidden || !podeEditarCapa) return;
+    ultimo = { x: e.clientX, y: e.clientY };
+    moldura.setPointerCapture(e.pointerId);
+    moldura.classList.add("capa-config--arrastando");
+    e.preventDefault();
+  });
+  moldura.addEventListener("pointermove", e => {
+    if (!ultimo) return;
+    moverCapa(e.clientX - ultimo.x, e.clientY - ultimo.y);
+    ultimo = { x: e.clientX, y: e.clientY };
+  });
+  const soltar = () => { ultimo = null; moldura.classList.remove("capa-config--arrastando"); };
+  moldura.addEventListener("pointerup", soltar);
+  moldura.addEventListener("pointercancel", soltar);
+  moldura.addEventListener("wheel", e => {
+    if ($("previewCapa").hidden || !podeEditarCapa) return;
+    e.preventDefault();
+    zoomCapa(ajuste.z - Math.sign(e.deltaY) * 0.1);
+  }, { passive: false });
+  moldura.addEventListener("keydown", e => {
+    if ($("previewCapa").hidden || !podeEditarCapa) return;
+    const passo = e.shiftKey ? 40 : 10;
+    const mov = { ArrowLeft: [passo, 0], ArrowRight: [-passo, 0], ArrowUp: [0, passo], ArrowDown: [0, -passo] }[e.key];
+    if (mov) { e.preventDefault(); moverCapa(...mov); }
+    else if (e.key === "+" || e.key === "=") { e.preventDefault(); zoomCapa(ajuste.z + 0.1); }
+    else if (e.key === "-") { e.preventDefault(); zoomCapa(ajuste.z - 0.1); }
+  });
+  $("zoomCapa").addEventListener("input", e => zoomCapa(+e.target.value));
+  $("btCentralizarCapa").addEventListener("click", () => { ajuste = { ...AJUSTE_PADRAO }; mostrarAjuste(); });
+  $("btSalvarAjusteCapa").addEventListener("click", salvarAjuste);
+  // a foto nova só aparece depois de carregar: aí dá pra calcular o arraste
+  $("previewCapa").addEventListener("load", mostrarAjuste);
+}
+
+async function salvarAjuste() {
+  const novo = arredondar(ajuste);
+  await updateDoc(srvDoc(S.atual), { capaAjuste: novo })
+    .then(() => { ajusteSalvo = { ...novo }; ajuste = { ...novo }; mostrarAjuste(); aviso("Enquadramento salvo!"); })
+    .catch(() => aviso("Não deu pra salvar o enquadramento."));
+}
+
+/** Foto inteira (sem cortar): o corte é feito pelo enquadramento. Tenta tamanhos menores se ficar pesada. */
+async function prepararCapa(arquivo) {
+  if (arquivo.type === "image/gif") {
+    const gif = await lerArquivo(arquivo);
+    if (gif.length <= CAPA_MAX_CARACTERES) return gif; // GIF continua animado
+  }
+  for (const [lado, qualidade] of [[CAPA_LADO, 0.85], [1280, 0.8], [1024, 0.75], [800, 0.7]]) {
+    const foto = await comprimirImagem(arquivo, lado, qualidade, { forcarRedimensionar: true });
+    if (foto.length <= CAPA_MAX_CARACTERES) return foto;
+  }
+  return null;
 }
 
 async function escolherCapa(arquivo) {
@@ -213,20 +317,20 @@ async function escolherCapa(arquivo) {
   if (!arquivo.type.startsWith("image/")) return aviso("Escolha uma imagem.");
   try {
     aviso("Preparando a capa…");
-    const capa = await comprimirImagem(arquivo, CAPA_LARGURA, 0.78);
-    if (capa.length > CAPA_MAX_CARACTERES) return aviso("Imagem muito pesada pra capa (GIF grande?). Tente outra.");
-    await updateDoc(srvDoc(S.atual), { capa });
-    renderPreviewCapa(capa);
-    $("btRemoverCapa").hidden = false;
-    aviso("Capa salva!");
+    const capa = await prepararCapa(arquivo);
+    if (!capa) return aviso("Imagem muito pesada pra capa. Se for GIF, tente um mais curto.");
+    await updateDoc(srvDoc(S.atual), { capa, capaAjuste: { ...AJUSTE_PADRAO } });
+    renderPreviewCapa(capa, AJUSTE_PADRAO);
+    $("molduraCapa").focus();
+    aviso("Capa salva! Arraste a foto pra ajustar o enquadramento.");
   } catch {
     aviso("Não deu pra salvar a capa.");
   }
 }
 
 async function removerCapa() {
-  await updateDoc(srvDoc(S.atual), { capa: deleteField() })
-    .then(() => { renderPreviewCapa(null); $("btRemoverCapa").hidden = true; aviso("Capa removida."); })
+  await updateDoc(srvDoc(S.atual), { capa: deleteField(), capaAjuste: deleteField() })
+    .then(() => { renderPreviewCapa(null); aviso("Capa removida."); })
     .catch(() => aviso("Não deu pra remover."));
 }
 
@@ -252,6 +356,7 @@ export function iniciarMembros() {
   $("btEscolherCapa").addEventListener("click", () => $("entradaCapa").click());
   $("entradaCapa").addEventListener("change", e => { escolherCapa(e.target.files[0]); e.target.value = ""; });
   $("btRemoverCapa").addEventListener("click", removerCapa);
+  ligarEditorCapa();
   $("btExcluirServidor").addEventListener("click", () => { $("dlgConfigServidor").close(); excluirServidor(); });
   $("btSairServidor").addEventListener("click", () => { $("dlgConfigServidor").close(); sairDoServidor(); });
 }
